@@ -45,54 +45,90 @@ const NotesApp = () => {
     setContent("");
   };
 
-    const loadNotes = async () => {
-      if (!user) return;
-      setLoading(true);
-      try {
-        console.log("Loading notes for user:", user.id);
-        const res = await fetch(`/api/notes?userId=${user.id}`);
-        
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || `HTTP ${res.status}`);
-        }
-        
-        const data = await res.json();
-        console.log("Loaded notes:", data.length);
-        setNotes(data);
-      } catch (err) {
-        console.error("Failed to load notes:", err);
-        alert("Failed to load notes: " + err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  
+const loadNotes = async () => {
+  if (!user) return;
+  setLoading(true);
+  try {
+    console.log("Loading notes for user:", user.id);
+    const res = await fetch(`/api/notes?userId=${user.id}`);
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || `HTTP ${res.status}`);
+    }
+    
+    const data = await res.json();
+    console.log("Loaded notes:", data.length);
+    setNotes(data);
+  } catch (err) {
+    console.error("Failed to load notes:", err);
+    
+   
+    if (err instanceof Error) {
+      alert("Failed to load notes: " + err.message);
+    } else {
+      alert("Failed to load notes: An unknown error occurred");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   const saveNote = async () => {
-    if (!title.trim() && !content.trim()) return;
-    if (!user) return;
-    setSaving(true);
+  if (!title.trim() && !content.trim()) return;
+  if (!user) return;
+  setSaving(true);
 
-    const payload = {
-      id: selectedNote?.id,
-      userId: user.id,
-      title: title || "Untitled",
-      content,
-    };
+  const payload = {
+    id: selectedNote?.id,
+    userId: user.id,
+    title: title || "Untitled",
+    content,
+  };
 
-    try {
-      const res = await fetch("/api/notes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+  try {
+    const res = await fetch("/api/notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("API Error:", text);
-        alert("Save failed: " + text);
-        return;
-      }
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("API Error:", text);
+      alert("Save failed: " + text);
+      return;
+    }
+
+    const savedNote: Note = await res.json();
+
+    if (!savedNote || !savedNote.id) {
+      console.error("Invalid JSON returned:", savedNote);
+      alert("Server returned invalid data");
+      return;
+    }
+
+    if (selectedNote) {
+      setNotes(notes.map((n) => (n.id === savedNote.id ? savedNote : n)));
+      setSelectedNote(savedNote);
+    } else {
+      setNotes([savedNote, ...notes]);
+      setSelectedNote(savedNote);
+    }
+  } catch (err) {
+    console.error("saveNote() error:", err);
+    
+ 
+    if (err instanceof Error) {
+      alert("Save failed: " + err.message);
+    } else {
+      alert("Save failed: An unknown error occurred");
+    }
+  } finally {
+    setSaving(false);
+  }
+};
 
       const savedNote: Note = await res.json();
 
@@ -130,16 +166,21 @@ const NotesApp = () => {
   };
 
   const deleteNote = async (noteId: string) => {
-    if (!confirm("Delete this note?")) return;
-    try {
-      await fetch(`/api/notes?noteId=${noteId}`, { method: "DELETE" });
-      setNotes(notes.filter((n) => n.id !== noteId));
-      if (selectedNote?.id === noteId) createNewNote();
-    } catch (err) {
-      console.error(err);
+  if (!confirm("Delete this note?")) return;
+  try {
+    await fetch(`/api/notes?noteId=${noteId}`, { method: "DELETE" });
+    setNotes(notes.filter((n) => n.id !== noteId));
+    if (selectedNote?.id === noteId) createNewNote();
+  } catch (err) {
+    console.error("Delete error:", err);
+ 
+    if (err instanceof Error) {
+      alert("Delete failed: " + err.message);
+    } else {
+      alert("Delete failed: An unknown error occurred");
     }
-  };
-
+  }
+};
 
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
