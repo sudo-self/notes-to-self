@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   if (!code) return NextResponse.json({ error: "No code provided" }, { status: 400 });
 
   try {
-    // Exchange code for access token
+  
     const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
       headers: { 
@@ -33,7 +33,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Failed to get access token" }, { status: 400 });
     }
 
-    // Fetch user info
+
     const userRes = await fetch("https://api.github.com/user", {
       headers: { 
         Authorization: `Bearer ${tokenData.access_token}`,
@@ -55,20 +55,19 @@ export async function GET(req: Request) {
       avatar_url: userData.avatar_url
     });
 
-    // Use the correct property names that match your frontend
     const user = {
       id: userData.id.toString(),
-      login: userData.login, // Frontend expects 'login'
-      avatar_url: userData.avatar_url // Frontend expects 'avatar_url'
+      login: userData.login,
+      avatar_url: userData.avatar_url 
     };
 
-    // Validate required fields
+
     if (!user.id || !user.login) {
       console.error("Missing required user fields:", user);
       return NextResponse.json({ error: "Incomplete user data from GitHub" }, { status: 400 });
     }
 
-    // Set user cookie using cookies() API (App Router style)
+
     const cookieStore = await cookies();
     cookieStore.set({
       name: "user",
