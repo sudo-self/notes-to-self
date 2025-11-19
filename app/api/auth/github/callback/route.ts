@@ -1,3 +1,5 @@
+// File: /app/api/auth/github/callback/route.ts
+
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
