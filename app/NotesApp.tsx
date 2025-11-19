@@ -45,90 +45,59 @@ const NotesApp = () => {
     setContent("");
   };
 
-  
-const loadNotes = async () => {
-  if (!user) return;
-  setLoading(true);
-  try {
-    console.log("Loading notes for user:", user.id);
-    const res = await fetch(`/api/notes?userId=${user.id}`);
-    
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.error || `HTTP ${res.status}`);
+  const loadNotes = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      console.log("Loading notes for user:", user.id);
+      const res = await fetch(`/api/notes?userId=${user.id}`);
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || `HTTP ${res.status}`);
+      }
+      
+      const data = await res.json();
+      console.log("Loaded notes:", data.length);
+      setNotes(data);
+    } catch (err) {
+      console.error("Failed to load notes:", err);
+      
+      if (err instanceof Error) {
+        alert("Failed to load notes: " + err.message);
+      } else {
+        alert("Failed to load notes: An unknown error occurred");
+      }
+    } finally {
+      setLoading(false);
     }
-    
-    const data = await res.json();
-    console.log("Loaded notes:", data.length);
-    setNotes(data);
-  } catch (err) {
-    console.error("Failed to load notes:", err);
-    
-   
-    if (err instanceof Error) {
-      alert("Failed to load notes: " + err.message);
-    } else {
-      alert("Failed to load notes: An unknown error occurred");
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const saveNote = async () => {
-  if (!title.trim() && !content.trim()) return;
-  if (!user) return;
-  setSaving(true);
-
-  const payload = {
-    id: selectedNote?.id,
-    userId: user.id,
-    title: title || "Untitled",
-    content,
   };
 
-  try {
-    const res = await fetch("/api/notes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+  const saveNote = async () => {
+    if (!title.trim() && !content.trim()) return;
+    if (!user) return;
+    setSaving(true);
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("API Error:", text);
-      alert("Save failed: " + text);
-      return;
-    }
+    const payload = {
+      id: selectedNote?.id,
+      userId: user.id,
+      title: title || "Untitled",
+      content,
+    };
 
-    const savedNote: Note = await res.json();
+    try {
+      const res = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!savedNote || !savedNote.id) {
-      console.error("Invalid JSON returned:", savedNote);
-      alert("Server returned invalid data");
-      return;
-    }
-
-    if (selectedNote) {
-      setNotes(notes.map((n) => (n.id === savedNote.id ? savedNote : n)));
-      setSelectedNote(savedNote);
-    } else {
-      setNotes([savedNote, ...notes]);
-      setSelectedNote(savedNote);
-    }
-  } catch (err) {
-    console.error("saveNote() error:", err);
-    
- 
-    if (err instanceof Error) {
-      alert("Save failed: " + err.message);
-    } else {
-      alert("Save failed: An unknown error occurred");
-    }
-  } finally {
-    setSaving(false);
-  }
-};
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("API Error:", text);
+        alert("Save failed: " + text);
+        return;
+      }
 
       const savedNote: Note = await res.json();
 
@@ -147,7 +116,12 @@ const loadNotes = async () => {
       }
     } catch (err) {
       console.error("saveNote() error:", err);
-      alert("Save failed, check console.");
+      
+      if (err instanceof Error) {
+        alert("Save failed: " + err.message);
+      } else {
+        alert("Save failed: An unknown error occurred");
+      }
     } finally {
       setSaving(false);
     }
@@ -166,21 +140,21 @@ const loadNotes = async () => {
   };
 
   const deleteNote = async (noteId: string) => {
-  if (!confirm("Delete this note?")) return;
-  try {
-    await fetch(`/api/notes?noteId=${noteId}`, { method: "DELETE" });
-    setNotes(notes.filter((n) => n.id !== noteId));
-    if (selectedNote?.id === noteId) createNewNote();
-  } catch (err) {
-    console.error("Delete error:", err);
- 
-    if (err instanceof Error) {
-      alert("Delete failed: " + err.message);
-    } else {
-      alert("Delete failed: An unknown error occurred");
+    if (!confirm("Delete this note?")) return;
+    try {
+      await fetch(`/api/notes?noteId=${noteId}`, { method: "DELETE" });
+      setNotes(notes.filter((n) => n.id !== noteId));
+      if (selectedNote?.id === noteId) createNewNote();
+    } catch (err) {
+      console.error("Delete error:", err);
+      
+      if (err instanceof Error) {
+        alert("Delete failed: " + err.message);
+      } else {
+        alert("Delete failed: An unknown error occurred");
+      }
     }
-  }
-};
+  };
 
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
@@ -200,7 +174,6 @@ const loadNotes = async () => {
     });
     return sortableNotes;
   }, [notes, sortOption]);
-
 
   const filteredNotes = getSortedNotes.filter(
     (note) =>
@@ -281,9 +254,6 @@ const loadNotes = async () => {
         <div className="p-4 border-b border-white/10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              {/* Note: User.avatar_url is in the interface but the provided code uses a static image.
-                  If the static image is not desired, update the src to user.avatar_url.
-              */}
               <img
                 src={user.avatar_url || "./avatar-192.png"}
                 alt="User avatar"
@@ -320,7 +290,7 @@ const loadNotes = async () => {
               className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-white placeholder-purple-300 focus:outline-none focus:border-purple-500 transition-colors"
             />
           </div>
-          {/* NEW FEATURE: Sort Dropdown */}
+          {/* Sort Dropdown */}
           <div className="flex items-center justify-between">
             <label htmlFor="sort-select" className="text-sm text-purple-300">
               Sort by:
