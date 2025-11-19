@@ -229,7 +229,7 @@ const NotesApp = () => {
               <Notebook className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">NTS</h1>
-            <p className="text-purple-200 mb-1">Note To Self</p>
+            <p className="text-purple-200 mb-1">Notes To Self</p>
             <p className="text-cyan-200 text-xs">{currentTime}</p>
           </div>
 
@@ -248,9 +248,9 @@ const NotesApp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex">
-      {/* Sidebar - Note List */}
+   
       <div className="w-80 bg-black/30 backdrop-blur-lg border-r border-white/10 flex flex-col">
-        {/* Header/User Info */}
+      
         <div className="p-4 border-b border-white/10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -278,7 +278,7 @@ const NotesApp = () => {
           </button>
         </div>
 
-        {/* Search and Sort Section */}
+     
         <div className="p-4 border-b border-white/10">
           <div className="relative mb-3">
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
@@ -290,7 +290,7 @@ const NotesApp = () => {
               className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-white placeholder-purple-300 focus:outline-none focus:border-purple-500 transition-colors"
             />
           </div>
-          {/* Sort Dropdown */}
+       
           <div className="flex items-center justify-between">
             <label htmlFor="sort-select" className="text-sm text-purple-300">
               Sort by:
@@ -326,7 +326,7 @@ const NotesApp = () => {
           </div>
         </div>
 
-        {/* Note List */}
+      
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center text-purple-300">Loading...</div>
@@ -370,7 +370,7 @@ const NotesApp = () => {
         </div>
       </div>
 
-      {/* Note Editor */}
+
       <div className="flex-1 flex flex-col">
         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-black/20 backdrop-blur-lg">
           <div className="text-purple-200 text-sm">
