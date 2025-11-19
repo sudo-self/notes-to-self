@@ -1,4 +1,4 @@
-### Run the CREATE TABLE command
+#### CREATE TABLE
 
 ```
 turso db shell notes-db-v2 "CREATE TABLE IF NOT EXISTS notes (
@@ -9,24 +9,25 @@ turso db shell notes-db-v2 "CREATE TABLE IF NOT EXISTS notes (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );"
+
 ```
 
 
-### Run the CREATE INDEX command  
+#### CREATE INDEX 
 
 ```
 turso db shell notes-db-v2 "CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);"
 
 ```
 
-#### install lib client
+#### LIB CLIENT
 
 ```
 pnpm install @libsql/client
 
 ```
 
-#### initial NODE.js
+#### NODE.js
 
 
 ```
