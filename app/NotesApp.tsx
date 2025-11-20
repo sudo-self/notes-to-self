@@ -19,7 +19,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Memoized
+// Memoized Note Item Component
 const NoteItem = React.memo(({ 
   note, 
   isSelected, 
@@ -76,7 +76,7 @@ const NotesApp = () => {
   const [currentTime, setCurrentTime] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("updated_desc");
 
-  // Debounce
+  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -206,7 +206,7 @@ const NotesApp = () => {
     }
   };
 
-  // Memoized 
+  // Memoized sorted notes
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
     sortableNotes.sort((a, b) => {
@@ -226,7 +226,7 @@ const NotesApp = () => {
     return sortableNotes;
   }, [notes, sortOption]);
 
-  // Memoized 
+  // Memoized filtered notes with debounced search
   const filteredNotes = useMemo(() => {
     return getSortedNotes.filter(
       (note) =>
@@ -234,17 +234,6 @@ const NotesApp = () => {
         note.content.toLowerCase().includes(debouncedSearch.toLowerCase())
     );
   }, [getSortedNotes, debouncedSearch]);
-
-  // Auto-save functionality (optional - uncomment if desired)
-  // useEffect(() => {
-  //   if (!title.trim() && !content.trim()) return;
-  //   
-  //   const autoSaveTimer = setTimeout(() => {
-  //     saveNote();
-  //   }, 2000);
-  //   
-  //   return () => clearTimeout(autoSaveTimer);
-  // }, [title, content]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -264,7 +253,7 @@ const NotesApp = () => {
     fetchUser();
   }, []);
 
-  // Load notes
+  // Load notes when user changes
   useEffect(() => {
     if (user) {
       loadNotes();
