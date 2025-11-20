@@ -25,8 +25,7 @@
 <hr>
 <img width="956" height="786" alt="Screenshot 2025-11-19 at 22 11 26" src="https://github.com/user-attachments/assets/3a0441bc-e412-4c0e-b3e7-dd2fd67feea1" />
 <img width="956" height="786" alt="Screenshot 2025-11-19 at 22 12 08" src="https://github.com/user-attachments/assets/e1281d7e-0bbd-4aa5-9ade-d5ca95480886" />
-<img width="706" height="586" alt="Screenshot 2025-11-19 at 09 06 50" src="https://github.com/user-attachments/assets/8002f1b7-efa4-411a-a512-fea7b5d60b45" />
-
+<img width="645" height="595" alt="Screenshot 2025-11-20 at 07 45 18" src="https://github.com/user-attachments/assets/0fc1a0cc-823a-4c95-b15c-8c20aa3ad11a" />
 
 ### create an <a href="https://github.com/settings/applications/new">Oauth App</a> on Github
 
