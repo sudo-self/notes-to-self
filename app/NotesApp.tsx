@@ -19,7 +19,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Memoized Note Item Component
+// Memoized Note 
 const NoteItem = React.memo(({ 
   note, 
   isSelected, 
@@ -52,7 +52,7 @@ const NoteItem = React.memo(({
           e.stopPropagation();
           onDelete(note.id);
         }}
-        className="text-purple-400 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-white/10"
+        className="text-purple-400 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-white/10 flex-shrink-0"
         title="Delete note"
       >
         <Trash2 className="w-4 h-4" />
@@ -76,7 +76,7 @@ const NotesApp = () => {
   const [currentTime, setCurrentTime] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("updated_desc");
 
-  // Debounce search input
+  // Debounce 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -206,7 +206,7 @@ const NotesApp = () => {
     }
   };
 
-  // Memoized sorted notes
+  // Memoized 
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
     sortableNotes.sort((a, b) => {
@@ -226,7 +226,7 @@ const NotesApp = () => {
     return sortableNotes;
   }, [notes, sortOption]);
 
-  // Memoized filtered notes with debounced search
+  // Memoized 
   const filteredNotes = useMemo(() => {
     return getSortedNotes.filter(
       (note) =>
@@ -253,7 +253,7 @@ const NotesApp = () => {
     fetchUser();
   }, []);
 
-  // Load notes when user changes
+  // Load notes
   useEffect(() => {
     if (user) {
       loadNotes();
@@ -309,10 +309,10 @@ const NotesApp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex">
-      {/* Sidebar */}
-      <div className="w-80 bg-black/30 backdrop-blur-lg border-r border-white/10 flex flex-col">
-        {/* User Info & New Note */}
-        <div className="p-4 border-b border-white/10">
+      {/* Sidebar - Fixed width with proper scrolling */}
+      <div className="w-80 bg-black/30 backdrop-blur-lg border-r border-white/10 flex flex-col h-screen">
+        {/* User Info & New Note - Fixed height */}
+        <div className="p-4 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <img
@@ -339,8 +339,8 @@ const NotesApp = () => {
           </button>
         </div>
 
-        {/* Search & Sort */}
-        <div className="p-4 border-b border-white/10">
+        {/* Search & Sort - Fixed height */}
+        <div className="p-4 border-b border-white/10 flex-shrink-0">
           <div className="relative mb-3">
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
             <input
@@ -387,7 +387,7 @@ const NotesApp = () => {
           </div>
         </div>
 
-        {/* Notes List */}
+        {/* Notes List - Scrollable area */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center text-purple-300">Loading...</div>
@@ -409,9 +409,10 @@ const NotesApp = () => {
         </div>
       </div>
 
-      {/* Editor */}
-      <div className="flex-1 flex flex-col">
-        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-black/20 backdrop-blur-lg">
+      {/* Editor - Flexible width with proper scrolling */}
+      <div className="flex-1 flex flex-col h-screen">
+        {/* Editor Header - Fixed height */}
+        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-black/20 backdrop-blur-lg flex-shrink-0">
           <div className="text-purple-200 text-sm">
             {selectedNote ? "Editing note" : "New note"}
             {selectedNote && (
@@ -429,21 +430,25 @@ const NotesApp = () => {
             {saving ? "Saving..." : "Save"}
           </button>
         </div>
-        <div className="flex-1 p-6 overflow-y-auto">
-          <input
-            type="text"
-            placeholder="Title..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent border-none text-3xl font-bold text-white placeholder-purple-300/50 focus:outline-none mb-4"
-          />
-          <textarea
-            placeholder="Note to self..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full h-full bg-transparent border-none text-lg text-purple-100 placeholder-purple-300/50 focus:outline-none resize-none"
-            rows={10}
-          />
+
+        {/* Editor Content - Scrollable area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            <input
+              type="text"
+              placeholder="Title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full bg-transparent border-none text-3xl font-bold text-white placeholder-purple-300/50 focus:outline-none mb-6"
+            />
+            <textarea
+              placeholder="Note to self..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="w-full min-h-[500px] bg-transparent border-none text-lg text-purple-100 placeholder-purple-300/50 focus:outline-none resize-none"
+              style={{ height: 'auto' }}
+            />
+          </div>
         </div>
       </div>
     </div>
