@@ -61,7 +61,16 @@ CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at);
 
 <img width="1233" height="337" alt="Screenshot 2025-11-19 at 23 25 04" src="https://github.com/user-attachments/assets/49f6e0a3-9b74-462e-b065-3dbe7fa29df5" />
 
-#### API DEBUG
+
+### API ROUTES
+
+- /api/auth/github
+- /api/auth/logout
+- /api/auth/me
+- /api/init-db
+- /api/notes
+
+### Debug
 
 - app/api/auth/debug/route.ts
 
