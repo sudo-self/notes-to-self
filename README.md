@@ -21,8 +21,7 @@
 - Auth: GitHub OAuth
 - Icons: Lucide React
 
-
-  
+#### Android <a href="https://notes-to-self.vercel.app/NotesToSelf.apk">App</a>
 <hr>
 <img width="956" height="786" alt="Screenshot 2025-11-19 at 22 11 26" src="https://github.com/user-attachments/assets/3a0441bc-e412-4c0e-b3e7-dd2fd67feea1" />
 <img width="956" height="786" alt="Screenshot 2025-11-19 at 22 12 08" src="https://github.com/user-attachments/assets/e1281d7e-0bbd-4aa5-9ade-d5ca95480886" />
