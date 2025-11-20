@@ -41,11 +41,9 @@
 - GITHUB_CLIENT_SECRET=
 - TURSO_DB_URL=
 - TURSO_TOKEN=
-- NEXT_PUBLIC_BASE_URL=
-- TURSO_DB_TOKEN=
+- NEXT_PUBLIC_BASE_URL=<
+- TURSO_DB_TOKEN
 - TURSO_AUTH_TOKEN=
-
-
 
 #### schema.sql
 
@@ -62,6 +60,8 @@ CREATE TABLE IF NOT EXISTS notes (
 CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
 CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at);
 ```
+
+<img width="1233" height="337" alt="Screenshot 2025-11-19 at 23 25 04" src="https://github.com/user-attachments/assets/49f6e0a3-9b74-462e-b065-3dbe7fa29df5" />
 
 #### API DEBUG
 
