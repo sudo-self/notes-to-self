@@ -5,7 +5,7 @@ import {
   Trash2, Plus, LogOut, Github, Save, Search, Notebook, 
   SortAsc, SortDesc, Edit3, Clock, User, FileText, 
   BookOpen, Zap, Moon, Sun, Menu, X, Shield, RotateCcw,
-  Type, Hash, Calendar
+  Type, Hash, Calendar, Copy, Check
 } from "lucide-react";
 
 type SortOption = "updated_desc" | "updated_asc" | "title_asc" | "title_desc";
@@ -25,19 +25,51 @@ interface User {
   avatar_url?: string;
 }
 
-// Enhanced Note 
+// Toast Component
+const Toast = ({ message, type = "success", onClose }: { 
+  message: string; 
+  type?: "success" | "error";
+  onClose: () => void;
+}) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border backdrop-blur-sm transition-all duration-300 ${
+      type === "success" 
+        ? "bg-green-500/90 text-white border-green-400" 
+        : "bg-red-500/90 text-white border-red-400"
+    }`}>
+      <div className="flex items-center gap-2">
+        {type === "success" ? (
+          <Check className="w-4 h-4" />
+        ) : (
+          <X className="w-4 h-4" />
+        )}
+        <span className="text-sm font-medium">{message}</span>
+      </div>
+    </div>
+  );
+};
+
+// Enhanced Note Item with Copy functionality
 const EnhancedNoteItem = React.memo(({ 
   note, 
   isSelected, 
   onSelect, 
-  onDelete 
+  onDelete,
+  onCopy 
 }: { 
   note: Note;
   isSelected: boolean;
   onSelect: (note: Note) => void;
   onDelete: (noteId: string) => void;
+  onCopy: (note: Note) => void;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "copying" | "copied">("idle");
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -53,6 +85,19 @@ const EnhancedNoteItem = React.memo(({
       return date.toLocaleDateString("en-GB", { weekday: 'short' });
     } else {
       return date.toLocaleDateString("en-GB", { day: 'numeric', month: 'short' });
+    }
+  };
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCopyState("copying");
+    
+    try {
+      await onCopy(note);
+      setCopyState("copied");
+      setTimeout(() => setCopyState("idle"), 2000);
+    } catch (error) {
+      setCopyState("idle");
     }
   };
 
@@ -91,18 +136,39 @@ const EnhancedNoteItem = React.memo(({
             )}
           </div>
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(note.id);
-          }}
-          className={`text-gray-400 hover:text-red-400 transition-all duration-300 p-2 rounded-lg ${
-            isHovered || isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-          } hover:bg-gray-600/50 transform hover:scale-110`}
-          title="Delete note"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          {/* Copy Button */}
+          <button
+            onClick={handleCopy}
+            className={`text-gray-400 hover:text-blue-400 transition-all duration-300 p-2 rounded-lg ${
+              (isHovered || isSelected || copyState !== "idle") ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            } hover:bg-gray-600/50 transform hover:scale-110`}
+            title="Copy note content"
+            disabled={copyState === "copying"}
+          >
+            {copyState === "copied" ? (
+              <Check className="w-4 h-4 text-green-400" />
+            ) : copyState === "copying" ? (
+              <RotateCcw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
+          </button>
+          
+          {/* Delete Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(note.id);
+            }}
+            className={`text-gray-400 hover:text-red-400 transition-all duration-300 p-2 rounded-lg ${
+              (isHovered || isSelected) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            } hover:bg-gray-600/50 transform hover:scale-110`}
+            title="Delete note"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -124,7 +190,7 @@ const NoteSkeleton = () => (
   </div>
 );
 
-// Stats 
+// Stats Panel
 const StatsPanel = ({ notes, characterCount }: { notes: Note[], characterCount: number }) => (
   <div className="flex items-center gap-4 text-xs text-gray-400">
     <div className="flex items-center gap-1">
@@ -155,8 +221,28 @@ const EnhancedNotesApp = () => {
   const [characterCount, setCharacterCount] = useState(0);
   const [autoSave, setAutoSave] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  // Debounce 
+  // Show toast function
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+  };
+
+  // Copy note to clipboard
+  const copyNoteToClipboard = async (note: Note) => {
+    try {
+      const textToCopy = note.title ? `${note.title}\n\n${note.content}` : note.content;
+      await navigator.clipboard.writeText(textToCopy);
+      showToast("Note copied to clipboard!");
+      return true;
+    } catch (error) {
+      console.error("Failed to copy note:", error);
+      showToast("Failed to copy note", "error");
+      return false;
+    }
+  };
+
+  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -164,7 +250,7 @@ const EnhancedNotesApp = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Character 
+  // Character count and change detection
   useEffect(() => {
     setCharacterCount(content.length);
     
@@ -175,7 +261,7 @@ const EnhancedNotesApp = () => {
     setHasUnsavedChanges(isChanged);
   }, [title, content, selectedNote]);
 
-  // Auto-save 
+  // Auto-save functionality
   useEffect(() => {
     if (autoSave && hasUnsavedChanges && user && (title.trim() || content.trim())) {
       const autoSaveTimer = setTimeout(() => {
@@ -217,6 +303,7 @@ const EnhancedNotesApp = () => {
       setNotes(data);
     } catch (err) {
       console.error("Failed to load notes:", err);
+      showToast("Failed to load notes", "error");
     } finally {
       setLoading(false);
     }
@@ -251,8 +338,10 @@ const EnhancedNotesApp = () => {
         setSelectedNote(savedNote);
       }
       setHasUnsavedChanges(false);
+      showToast("Note saved successfully!");
     } catch (err) {
       console.error("Save error:", err);
+      showToast("Failed to save note", "error");
     } finally {
       setSaving(false);
     }
@@ -292,13 +381,14 @@ const EnhancedNotesApp = () => {
       if (selectedNote?.id === noteId) {
         createNewNote();
       }
+      showToast("Note deleted successfully");
     } catch (err) {
       console.error("Delete error:", err);
-      alert("Failed to delete note");
+      showToast("Failed to delete note", "error");
     }
   };
 
-  // Memoized 
+  // Memoized sorted notes
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
     sortableNotes.sort((a, b) => {
@@ -318,7 +408,7 @@ const EnhancedNotesApp = () => {
     return sortableNotes;
   }, [notes, sortOption]);
 
-  // Memoized 
+  // Memoized filtered notes
   const filteredNotes = useMemo(() => {
     return getSortedNotes.filter(
       (note) =>
@@ -327,7 +417,7 @@ const EnhancedNotesApp = () => {
     );
   }, [getSortedNotes, debouncedSearch]);
 
-  // loading
+  // User and notes loading
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
@@ -398,7 +488,7 @@ const EnhancedNotesApp = () => {
           <div className="mt-6 text-center text-gray-400 text-sm">
             <div className="flex items-center justify-center gap-2">
               <Shield className="w-4 h-4" />
-              <span>Your notes are private and secure</span>
+              <span>NTS does not access your data. All notes are private and secure</span>
             </div>
           </div>
         </div>
@@ -408,6 +498,15 @@ const EnhancedNotesApp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex">
+      {/* Toast Notification */}
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
+
       {/* Mobile Sidebar Toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -530,6 +629,7 @@ const EnhancedNotesApp = () => {
                 isSelected={selectedNote?.id === note.id}
                 onSelect={selectNote}
                 onDelete={deleteNote}
+                onCopy={copyNoteToClipboard}
               />
             ))
           )}
@@ -597,13 +697,13 @@ const EnhancedNotesApp = () => {
           <div className="max-w-4xl mx-auto p-6">
             <input
               type="text"
-              placeholder="Note title..."
+              placeholder="Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full bg-transparent border-none text-3xl font-bold text-white placeholder-gray-400 focus:outline-none mb-6 font-serif"
             />
             <textarea
-              placeholder="Start writing your thoughts..."
+              placeholder="Note to self..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className="w-full min-h-[60vh] bg-transparent border-none text-lg text-gray-100 placeholder-gray-500 focus:outline-none resize-none leading-relaxed font-light"
