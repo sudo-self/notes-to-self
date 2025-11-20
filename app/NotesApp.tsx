@@ -489,7 +489,7 @@ const EnhancedNotesApp = () => {
             className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl border border-gray-600"
           >
             <Github className="w-5 h-5" />
-            {loading ? "Connecting..." : "Continue with GitHub"}
+            {loading ? "Connecting..." : "Sign in"}
           </button>
           <div className="mt-6 text-center text-gray-400 text-sm">
             <div className="flex items-center justify-center gap-2">
