@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { 
   Trash2, Plus, LogOut, Github, Save, Search, Notebook, 
   SortAsc, SortDesc, Edit3, Clock, User, FileText, 
@@ -25,14 +25,14 @@ interface User {
   avatar_url?: string;
 }
 
-// Toast Component
+// Toast Component - SHORT DURATION
 const Toast = ({ message, type = "success", onClose }: { 
   message: string; 
   type?: "success" | "error";
   onClose: () => void;
 }) => {
   useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
+    const timer = setTimeout(onClose, 1500);
     return () => clearTimeout(timer);
   }, [onClose]);
 
@@ -101,7 +101,7 @@ const EnhancedNoteItem = React.memo(({
     try {
       await onCopy(note);
       setCopyState("copied");
-      setTimeout(() => setCopyState("idle"), 2000);
+      setTimeout(() => setCopyState("idle"), 1000);
     } catch (error) {
       setCopyState("idle");
     }
@@ -275,6 +275,10 @@ const EnhancedNotesApp = () => {
     onConfirm: () => void;
   } | null>(null);
 
+  // Use refs to prevent infinite loops
+  const autoSaveInProgress = useRef(false);
+  const lastSavedContent = useRef({ title: "", content: "" });
+
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
   };
@@ -316,7 +320,7 @@ const EnhancedNotesApp = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Character count and change detection
+  // Character count and change detection - FIXED
   useEffect(() => {
     setCharacterCount(content.length);
     
@@ -327,18 +331,30 @@ const EnhancedNotesApp = () => {
     setHasUnsavedChanges(isChanged);
   }, [title, content, selectedNote]);
 
-  // Auto-save functionality
+  // Auto-save functionality - FIXED to prevent loops
   useEffect(() => {
-    if (autoSave && hasUnsavedChanges && user && (title.trim() || content.trim())) {
+    if (autoSave && 
+        hasUnsavedChanges && 
+        user && 
+        (title.trim() || content.trim()) &&
+        !saving &&
+        !autoSaveInProgress.current &&
+        (title !== lastSavedContent.current.title || content !== lastSavedContent.current.content)
+    ) {
+      autoSaveInProgress.current = true;
+      
       const autoSaveTimer = setTimeout(() => {
         if (!saving) {
           saveNote();
         }
-      }, 1500);
+      }, 2000); // Increased slightly to prevent rapid firing
       
-      return () => clearTimeout(autoSaveTimer);
+      return () => {
+        clearTimeout(autoSaveTimer);
+        autoSaveInProgress.current = false;
+      };
     }
-  }, [title, content, autoSave, hasUnsavedChanges]);
+  }, [title, content, autoSave, hasUnsavedChanges, saving, user]);
 
   const handleGitHubLogin = () => {
     window.location.href = "/api/auth/github";
@@ -355,6 +371,7 @@ const EnhancedNotesApp = () => {
       setSelectedNote(null);
       setTitle("");
       setContent("");
+      lastSavedContent.current = { title: "", content: "" };
     }
   };
 
@@ -377,6 +394,11 @@ const EnhancedNotesApp = () => {
 
   const saveNote = async () => {
     if ((!title.trim() && !content.trim()) || !user || !hasUnsavedChanges) return;
+    
+    // Prevent multiple saves of the same content
+    if (title === lastSavedContent.current.title && content === lastSavedContent.current.content) {
+      return;
+    }
     
     setSaving(true);
     const payload = {
@@ -403,13 +425,17 @@ const EnhancedNotesApp = () => {
         setNotes([savedNote, ...notes]);
         setSelectedNote(savedNote);
       }
+      
+      // Update last saved content
+      lastSavedContent.current = { title, content };
       setHasUnsavedChanges(false);
-      showToast("Note saved successfully!");
+      showToast("Note saved!");
     } catch (err) {
       console.error("Save error:", err);
       showToast("Failed to save note", "error");
     } finally {
       setSaving(false);
+      autoSaveInProgress.current = false;
     }
   };
 
@@ -423,6 +449,7 @@ const EnhancedNotesApp = () => {
           setTitle("");
           setContent("");
           setHasUnsavedChanges(false);
+          lastSavedContent.current = { title: "", content: "" };
         }
       );
     } else {
@@ -430,6 +457,7 @@ const EnhancedNotesApp = () => {
       setTitle("");
       setContent("");
       setHasUnsavedChanges(false);
+      lastSavedContent.current = { title: "", content: "" };
     }
   };
 
@@ -443,6 +471,7 @@ const EnhancedNotesApp = () => {
           setTitle(note.title);
           setContent(note.content);
           setHasUnsavedChanges(false);
+          lastSavedContent.current = { title: note.title, content: note.content };
         }
       );
     } else {
@@ -450,6 +479,7 @@ const EnhancedNotesApp = () => {
       setTitle(note.title);
       setContent(note.content);
       setHasUnsavedChanges(false);
+      lastSavedContent.current = { title: note.title, content: note.content };
     }
   }, [hasUnsavedChanges]);
 
@@ -471,8 +501,9 @@ const EnhancedNotesApp = () => {
             setTitle("");
             setContent("");
             setHasUnsavedChanges(false);
+            lastSavedContent.current = { title: "", content: "" };
           }
-          showToast("Note deleted successfully");
+          showToast("Note deleted");
         } catch (err) {
           console.error("Delete error:", err);
           showToast("Failed to delete note", "error");
