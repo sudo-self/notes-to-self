@@ -488,7 +488,7 @@ const EnhancedNotesApp = () => {
           <div className="mt-6 text-center text-gray-400 text-sm">
             <div className="flex items-center justify-center gap-2">
               <Shield className="w-4 h-4" />
-              <span>NTS does not access your data. All notes are private and secure</span>
+              <span>All notes are private and secure</span>
             </div>
           </div>
         </div>
