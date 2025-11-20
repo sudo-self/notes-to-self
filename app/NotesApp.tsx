@@ -25,7 +25,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Toast Component (unchanged)
+// Toast Component
 const Toast = ({ message, type = "success", onClose }: { 
   message: string; 
   type?: "success" | "error";
@@ -60,14 +60,15 @@ const Toast = ({ message, type = "success", onClose }: {
   );
 };
 
-// Enhanced Note Item (unchanged)
+// Enhanced Note Item with theme support
 const EnhancedNoteItem = React.memo(({ 
   note, 
   isSelected, 
   onSelect, 
   onDelete,
   onCopy,
-  onShare
+  onShare,
+  isDark
 }: { 
   note: Note;
   isSelected: boolean;
@@ -75,6 +76,7 @@ const EnhancedNoteItem = React.memo(({
   onDelete: (noteId: string) => void;
   onCopy: (note: Note) => void;
   onShare: (note: Note) => void;
+  isDark: boolean;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copying" | "copied">("idle");
@@ -128,30 +130,48 @@ const EnhancedNoteItem = React.memo(({
       onClick={() => onSelect(note)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`p-4 border-b border-gray-700/50 cursor-pointer transition-all duration-300 group ${
+      className={`p-4 border-b cursor-pointer transition-all duration-300 group ${
+        isDark 
+          ? "border-gray-700/50" 
+          : "border-gray-300/50"
+      } ${
         isSelected 
           ? "bg-gradient-to-r from-blue-500/15 to-purple-500/15 border-l-4 border-blue-400 shadow-inner" 
-          : "hover:bg-gray-700/20 hover:border-l-4 hover:border-gray-500/50"
+          : `hover:border-l-4 ${
+              isDark 
+                ? "hover:bg-gray-700/20 hover:border-gray-500/50" 
+                : "hover:bg-gray-100/80 hover:border-gray-400/50"
+            }`
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <FileText className="w-4 h-4 text-blue-400" />
-            <h3 className="text-white font-semibold truncate text-base">
+            <FileText className={`w-4 h-4 ${
+              isDark ? "text-blue-400" : "text-blue-600"
+            }`} />
+            <h3 className={`font-semibold truncate text-base ${
+              isDark ? "text-white" : "text-gray-800"
+            }`}>
               {note.title || "Untitled Note"}
             </h3>
           </div>
-          <p className="text-gray-300 text-sm line-clamp-2 mb-3 leading-relaxed">
+          <p className={`text-sm line-clamp-2 mb-3 leading-relaxed ${
+            isDark ? "text-gray-300" : "text-gray-600"
+          }`}>
             {note.content.substring(0, 100) || "No content yet..."}
           </p>
           <div className="flex items-center gap-3 text-xs">
-            <div className="flex items-center gap-1 text-gray-400">
+            <div className={`flex items-center gap-1 ${
+              isDark ? "text-gray-400" : "text-gray-500"
+            }`}>
               <Clock className="w-3 h-3" />
               <span>{formatDate(note.updated_at)}</span>
             </div>
             {note.content.length > 0 && (
-              <div className="flex items-center gap-1 text-gray-400">
+              <div className={`flex items-center gap-1 ${
+                isDark ? "text-gray-400" : "text-gray-500"
+              }`}>
                 <Type className="w-3 h-3" />
                 <span>{note.content.length} chars</span>
               </div>
@@ -162,9 +182,13 @@ const EnhancedNoteItem = React.memo(({
           {/* Share Button */}
           <button
             onClick={handleShare}
-            className={`text-gray-400 hover:text-green-400 transition-all duration-300 p-2 rounded-lg ${
+            className={`transition-all duration-300 p-2 rounded-lg ${
               (isHovered || isSelected || shareState !== "idle") ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-            } hover:bg-gray-600/50 transform hover:scale-110`}
+            } ${
+              isDark 
+                ? "text-gray-400 hover:text-green-400 hover:bg-gray-600/50" 
+                : "text-gray-500 hover:text-green-600 hover:bg-gray-200/50"
+            } transform hover:scale-110`}
             title="Share note"
             disabled={shareState === "sharing"}
           >
@@ -180,9 +204,13 @@ const EnhancedNoteItem = React.memo(({
           {/* Copy Button */}
           <button
             onClick={handleCopy}
-            className={`text-gray-400 hover:text-blue-400 transition-all duration-300 p-2 rounded-lg ${
+            className={`transition-all duration-300 p-2 rounded-lg ${
               (isHovered || isSelected || copyState !== "idle") ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-            } hover:bg-gray-600/50 transform hover:scale-110`}
+            } ${
+              isDark 
+                ? "text-gray-400 hover:text-blue-400 hover:bg-gray-600/50" 
+                : "text-gray-500 hover:text-blue-600 hover:bg-gray-200/50"
+            } transform hover:scale-110`}
             title="Copy note content"
             disabled={copyState === "copying"}
           >
@@ -201,9 +229,13 @@ const EnhancedNoteItem = React.memo(({
               e.stopPropagation();
               onDelete(note.id);
             }}
-            className={`text-gray-400 hover:text-red-400 transition-all duration-300 p-2 rounded-lg ${
+            className={`transition-all duration-300 p-2 rounded-lg ${
               (isHovered || isSelected) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-            } hover:bg-gray-600/50 transform hover:scale-110`}
+            } ${
+              isDark 
+                ? "text-gray-400 hover:text-red-400 hover:bg-gray-600/50" 
+                : "text-gray-500 hover:text-red-600 hover:bg-gray-200/50"
+            } transform hover:scale-110`}
             title="Delete note"
           >
             <Trash2 className="w-4 h-4" />
@@ -216,23 +248,39 @@ const EnhancedNoteItem = React.memo(({
 
 EnhancedNoteItem.displayName = 'EnhancedNoteItem';
 
-// Loading Skeleton (unchanged)
-const NoteSkeleton = () => (
-  <div className="p-4 border-b border-gray-700/50 animate-pulse">
+// Loading Skeleton with theme support
+const NoteSkeleton = ({ isDark }: { isDark: boolean }) => (
+  <div className={`p-4 border-b animate-pulse ${
+    isDark ? "border-gray-700/50" : "border-gray-300/50"
+  }`}>
     <div className="flex items-start gap-3">
-      <div className="w-8 h-8 bg-gray-600/30 rounded-lg"></div>
+      <div className={`w-8 h-8 rounded-lg ${
+        isDark ? "bg-gray-600/30" : "bg-gray-300/30"
+      }`}></div>
       <div className="flex-1 space-y-2">
-        <div className="h-4 bg-gray-600/30 rounded w-3/4"></div>
-        <div className="h-3 bg-gray-600/30 rounded w-full"></div>
-        <div className="h-3 bg-gray-600/30 rounded w-1/2"></div>
+        <div className={`h-4 rounded w-3/4 ${
+          isDark ? "bg-gray-600/30" : "bg-gray-300/30"
+        }`}></div>
+        <div className={`h-3 rounded w-full ${
+          isDark ? "bg-gray-600/30" : "bg-gray-300/30"
+        }`}></div>
+        <div className={`h-3 rounded w-1/2 ${
+          isDark ? "bg-gray-600/30" : "bg-gray-300/30"
+        }`}></div>
       </div>
     </div>
   </div>
 );
 
-// Stats Panel (unchanged)
-const StatsPanel = ({ notes, characterCount }: { notes: Note[], characterCount: number }) => (
-  <div className="flex items-center gap-4 text-xs text-gray-400">
+// Stats Panel with theme support
+const StatsPanel = ({ notes, characterCount, isDark }: { 
+  notes: Note[], 
+  characterCount: number,
+  isDark: boolean 
+}) => (
+  <div className={`flex items-center gap-4 text-xs ${
+    isDark ? "text-gray-400" : "text-gray-500"
+  }`}>
     <div className="flex items-center gap-1">
       <BookOpen className="w-3 h-3" />
       <span>{notes.length} notes</span>
@@ -244,31 +292,43 @@ const StatsPanel = ({ notes, characterCount }: { notes: Note[], characterCount: 
   </div>
 );
 
-// Confirmation Dialog (unchanged)
+// Confirmation Dialog with theme support
 const ConfirmationDialog = ({ 
   isOpen, 
   onClose, 
   onConfirm, 
   title, 
-  message 
+  message,
+  isDark
 }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
   message: string;
+  isDark: boolean;
 }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-gray-800/90 backdrop-blur-lg border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-        <h3 className="text-white text-lg font-semibold mb-2">{title}</h3>
-        <p className="text-gray-300 mb-6">{message}</p>
+      <div className={`backdrop-blur-lg border rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl ${
+        isDark 
+          ? "bg-gray-800/90 border-gray-700" 
+          : "bg-white/90 border-gray-300"
+      }`}>
+        <h3 className={`text-lg font-semibold mb-2 ${
+          isDark ? "text-white" : "text-gray-800"
+        }`}>{title}</h3>
+        <p className={`mb-6 ${
+          isDark ? "text-gray-300" : "text-gray-600"
+        }`}>{message}</p>
         <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+            className={`px-4 py-2 transition-colors ${
+              isDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-800"
+            }`}
           >
             Cancel
           </button>
@@ -284,14 +344,18 @@ const ConfirmationDialog = ({
   );
 };
 
-// Theme Toggle Component - EXTRACTED FOR REUSE
+// Theme Toggle Component
 const ThemeToggle = ({ isDark, setIsDark }: { 
   isDark: boolean; 
   setIsDark: (isDark: boolean) => void;
 }) => (
   <button
     onClick={() => setIsDark(!isDark)}
-    className="p-2 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-700/50 transition-all duration-300 group"
+    className={`p-2 rounded-lg transition-all duration-300 group ${
+      isDark 
+        ? "text-gray-400 hover:text-amber-400 hover:bg-gray-700/50" 
+        : "text-gray-500 hover:text-amber-600 hover:bg-gray-200/50"
+    }`}
     title={`Switch to ${isDark ? "light" : "dark"} mode`}
   >
     {isDark ? (
@@ -327,14 +391,14 @@ const EnhancedNotesApp = () => {
     onConfirm: () => void;
   } | null>(null);
   
-  // SINGLE SOURCE OF TRUTH for theme state
+  // Theme state
   const [isDark, setIsDark] = useState(true);
 
   // Use refs to prevent infinite loops
   const autoSaveInProgress = useRef(false);
   const lastSavedContent = useRef({ title: "", content: "" });
 
-  // Theme effect - SIMPLIFIED and WORKING
+  // Theme effect
   useEffect(() => {
     const root = document.documentElement;
     if (isDark) {
@@ -361,7 +425,6 @@ const EnhancedNotesApp = () => {
     }
   }, []);
 
-  // Rest of your component logic remains the same...
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
   };
@@ -696,31 +759,55 @@ const EnhancedNotesApp = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
-        {/* Theme Toggle - Now using the shared component */}
+      <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ${
+        isDark 
+          ? "bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900" 
+          : "bg-gradient-to-br from-gray-100 via-blue-100 to-gray-100"
+      }`}>
+        {/* Theme Toggle */}
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle isDark={isDark} setIsDark={setIsDark} />
         </div>
         
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
+        <div className={`backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border shadow-2xl transition-colors duration-300 ${
+          isDark
+            ? "bg-white/10 border-white/20"
+            : "bg-white/80 border-gray-200/50"
+        }`}>
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+            <div className={`w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center transition-colors duration-300 ${
+              isDark
+                ? "bg-gradient-to-br from-blue-500 to-purple-600"
+                : "bg-gradient-to-br from-blue-400 to-purple-500"
+            }`}>
               <Notebook className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">NTS</h1>
-            <p className="text-blue-200 mb-2">Notes To Self</p>
-            <p className="text-cyan-200 text-xs font-mono">{currentTime}</p>
+            <h1 className={`text-3xl font-bold mb-2 transition-colors duration-300 ${
+              isDark ? "text-white" : "text-gray-800"
+            }`}>NTS</h1>
+            <p className={`mb-2 transition-colors duration-300 ${
+              isDark ? "text-blue-200" : "text-blue-600"
+            }`}>Notes To Self</p>
+            <p className={`text-xs font-mono transition-colors duration-300 ${
+              isDark ? "text-cyan-200" : "text-cyan-600"
+            }`}>{currentTime}</p>
           </div>
 
           <button
             onClick={handleGitHubLogin}
             disabled={loading}
-            className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl border border-gray-600"
+            className={`w-full font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl border ${
+              isDark
+                ? "bg-gray-800 hover:bg-gray-700 text-white border-gray-600"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-800 border-gray-400"
+            }`}
           >
             <Github className="w-5 h-5" />
             {loading ? "Connecting..." : "Sign in"}
           </button>
-          <div className="mt-6 text-center text-gray-400 text-sm">
+          <div className={`mt-6 text-center text-sm ${
+            isDark ? "text-gray-400" : "text-gray-500"
+          }`}>
             <div className="flex items-center justify-center gap-2">
               <Shield className="w-4 h-4" />
               <span>All notes are private and secure</span>
@@ -732,7 +819,11 @@ const EnhancedNotesApp = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex">
+    <div className={`min-h-screen flex transition-colors duration-300 ${
+      isDark 
+        ? "bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900" 
+        : "bg-gradient-to-br from-gray-100 via-blue-100 to-gray-100"
+    }`}>
       {/* Toast Notification */}
       {toast && (
         <Toast 
@@ -750,25 +841,36 @@ const EnhancedNotesApp = () => {
           onConfirm={confirmationDialog.onConfirm}
           title={confirmationDialog.title}
           message={confirmationDialog.message}
+          isDark={isDark}
         />
       )}
 
       {/* Mobile Sidebar Toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-gray-800/90 backdrop-blur-sm text-white p-2 rounded-lg border border-gray-600"
+        className={`lg:hidden fixed top-4 left-4 z-50 backdrop-blur-sm p-2 rounded-lg border transition-colors duration-300 ${
+          isDark
+            ? "bg-gray-800/90 text-white border-gray-600"
+            : "bg-white/90 text-gray-800 border-gray-300"
+        }`}
       >
         {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
       {/* Sidebar */}
       <div className={`
-        w-80 bg-gray-800/80 backdrop-blur-lg border-r border-gray-700/50 flex flex-col h-screen transition-transform duration-300
+        w-80 backdrop-blur-lg border-r flex flex-col h-screen transition-all duration-300
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         fixed lg:relative z-40
+        ${isDark 
+          ? "bg-gray-800/80 border-gray-700/50" 
+          : "bg-white/80 border-gray-300/50"
+        }
       `}>
         {/* User Info & New Note */}
-        <div className="p-4 border-b border-gray-700/50 flex-shrink-0">
+        <div className={`p-4 border-b flex-shrink-0 ${
+          isDark ? "border-gray-700/50" : "border-gray-300/50"
+        }`}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <img
@@ -777,16 +879,21 @@ const EnhancedNotesApp = () => {
                 className="w-10 h-10 rounded-lg object-cover border-2 border-blue-400/50"
               />
               <div>
-                <p className="text-white text-sm font-medium">@{user.login}</p>
-                <StatsPanel notes={notes} characterCount={characterCount} />
+                <p className={`text-sm font-medium ${
+                  isDark ? "text-white" : "text-gray-800"
+                }`}>@{user.login}</p>
+                <StatsPanel notes={notes} characterCount={characterCount} isDark={isDark} />
               </div>
             </div>
             <div className="flex items-center gap-1">
-              {/* Using the shared ThemeToggle component */}
               <ThemeToggle isDark={isDark} setIsDark={setIsDark} />
               <button
                 onClick={handleLogout}
-                className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700/50"
+                className={`transition-colors p-2 rounded-lg ${
+                  isDark 
+                    ? "text-gray-400 hover:text-white hover:bg-gray-700/50" 
+                    : "text-gray-500 hover:text-gray-800 hover:bg-gray-200/50"
+                }`}
                 title="Logout"
               >
                 <LogOut className="w-5 h-5" />
@@ -806,20 +913,30 @@ const EnhancedNotesApp = () => {
         </div>
 
         {/* Search & Sort */}
-        <div className="p-4 border-b border-gray-700/50 flex-shrink-0 space-y-3">
+        <div className={`p-4 border-b flex-shrink-0 space-y-3 ${
+          isDark ? "border-gray-700/50" : "border-gray-300/50"
+        }`}>
           <div className="relative">
-            <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search className={`w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 ${
+              isDark ? "text-gray-400" : "text-gray-500"
+            }`} />
             <input
               type="text"
               placeholder="Search notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-2 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+              className={`w-full border rounded-lg py-2 pl-10 pr-4 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors ${
+                isDark
+                  ? "bg-gray-700/50 border-gray-600/50 text-white"
+                  : "bg-gray-100/50 border-gray-300/50 text-gray-800"
+              }`}
             />
           </div>
        
           <div className="flex items-center justify-between">
-            <label htmlFor="sort-select" className="text-sm text-gray-400">
+            <label htmlFor="sort-select" className={`text-sm ${
+              isDark ? "text-gray-400" : "text-gray-500"
+            }`}>
               Sort by:
             </label>
             <div className="relative">
@@ -827,22 +944,28 @@ const EnhancedNotesApp = () => {
                 id="sort-select"
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="block w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-1 px-3 text-sm text-white focus:outline-none focus:border-blue-500 appearance-none pr-8 cursor-pointer transition-colors"
+                className={`block w-full border rounded-lg py-1 px-3 text-sm focus:outline-none focus:border-blue-500 appearance-none pr-8 cursor-pointer transition-colors ${
+                  isDark
+                    ? "bg-gray-700/50 border-gray-600/50 text-white"
+                    : "bg-gray-100/50 border-gray-300/50 text-gray-800"
+                }`}
               >
-                <option value="updated_desc" className="bg-gray-800 text-white">
+                <option value="updated_desc" className={isDark ? "bg-gray-800 text-white" : "bg-white text-gray-800"}>
                   Latest Update
                 </option>
-                <option value="updated_asc" className="bg-gray-800 text-white">
+                <option value="updated_asc" className={isDark ? "bg-gray-800 text-white" : "bg-white text-gray-800"}>
                   Oldest Update
                 </option>
-                <option value="title_asc" className="bg-gray-800 text-white">
+                <option value="title_asc" className={isDark ? "bg-gray-800 text-white" : "bg-white text-gray-800"}>
                   Title (A-Z)
                 </option>
-                <option value="title_desc" className="bg-gray-800 text-white">
+                <option value="title_desc" className={isDark ? "bg-gray-800 text-white" : "bg-white text-gray-800"}>
                   Title (Z-A)
                 </option>
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+              <div className={`pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 ${
+                isDark ? "text-gray-400" : "text-gray-500"
+              }`}>
                 {sortOption.includes("asc") ? (
                   <SortAsc className="w-4 h-4" />
                 ) : (
@@ -858,11 +981,13 @@ const EnhancedNotesApp = () => {
           {loading ? (
             <div className="space-y-1">
               {[...Array(5)].map((_, i) => (
-                <NoteSkeleton key={i} />
+                <NoteSkeleton key={i} isDark={isDark} />
               ))}
             </div>
           ) : filteredNotes.length === 0 ? (
-            <div className="p-8 text-center text-gray-400">
+            <div className={`p-8 text-center ${
+              isDark ? "text-gray-400" : "text-gray-500"
+            }`}>
               <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg mb-2">
                 {debouncedSearch ? "No notes found" : "No notes yet"}
@@ -881,6 +1006,7 @@ const EnhancedNotesApp = () => {
                 onDelete={deleteNote}
                 onCopy={copyNoteToClipboard}
                 onShare={shareNote}
+                isDark={isDark}
               />
             ))
           )}
@@ -890,15 +1016,23 @@ const EnhancedNotesApp = () => {
       {/* Editor */}
       <div className="flex-1 flex flex-col h-screen">
         {/* Editor Header */}
-        <div className="p-6 border-b border-gray-700/50 flex items-center justify-between bg-gray-800/50 backdrop-blur-lg flex-shrink-0">
+        <div className={`p-6 border-b flex items-center justify-between backdrop-blur-lg flex-shrink-0 ${
+          isDark 
+            ? "border-gray-700/50 bg-gray-800/50" 
+            : "border-gray-300/50 bg-white/50"
+        }`}>
           <div className="flex items-center gap-4">
-            <div className="text-gray-300 text-sm">
+            <div className={`text-sm ${
+              isDark ? "text-gray-300" : "text-gray-600"
+            }`}>
               {selectedNote ? (
                 <div className="flex items-center gap-2">
                   <Edit3 className="w-4 h-4" />
                   <span>Editing note</span>
-                  <span className="text-gray-500">•</span>
-                  <span className="text-gray-400 text-xs">
+                  <span className={isDark ? "text-gray-500" : "text-gray-400"}>•</span>
+                  <span className={`text-xs ${
+                    isDark ? "text-gray-400" : "text-gray-500"
+                  }`}>
                     <Calendar className="w-3 h-3 inline mr-1" />
                     {new Date(selectedNote.updated_at).toLocaleDateString("en-GB")}
                   </span>
@@ -912,7 +1046,9 @@ const EnhancedNotesApp = () => {
             </div>
             
             {hasUnsavedChanges && (
-              <div className="flex items-center gap-1 text-amber-400 text-xs">
+              <div className={`flex items-center gap-1 text-xs ${
+                isDark ? "text-amber-400" : "text-amber-600"
+              }`}>
                 <Zap className="w-3 h-3" />
                 <span>Unsaved changes</span>
               </div>
@@ -920,12 +1056,18 @@ const EnhancedNotesApp = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            <StatsPanel notes={[selectedNote].filter(Boolean) as Note[]} characterCount={characterCount} />
+            <StatsPanel notes={[selectedNote].filter(Boolean) as Note[]} characterCount={characterCount} isDark={isDark} />
             
-            <div className="flex items-center gap-2 bg-gray-700/50 rounded-lg p-1">
+            <div className={`flex items-center gap-2 rounded-lg p-1 ${
+              isDark ? "bg-gray-700/50" : "bg-gray-200/50"
+            }`}>
               <button
                 onClick={() => setAutoSave(!autoSave)}
-                className={`p-1 rounded text-xs ${autoSave ? 'text-green-400' : 'text-gray-400'}`}
+                className={`p-1 rounded text-xs ${
+                  autoSave 
+                    ? isDark ? 'text-green-400' : 'text-green-600' 
+                    : isDark ? 'text-gray-400' : 'text-gray-500'
+                }`}
                 title={autoSave ? "Auto-save enabled" : "Auto-save disabled"}
               >
                 <Save className="w-4 h-4" />
@@ -944,20 +1086,26 @@ const EnhancedNotesApp = () => {
         </div>
 
         {/* Editor Content */}
-        <div className="flex-1 overflow-y-auto bg-gray-900/30">
+        <div className={`flex-1 overflow-y-auto ${
+          isDark ? "bg-gray-900/30" : "bg-gray-50/30"
+        }`}>
           <div className="max-w-4xl mx-auto p-6">
             <input
               type="text"
               placeholder="Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-transparent border-none text-3xl font-bold text-white placeholder-gray-400 focus:outline-none mb-6 font-serif"
+              className={`w-full bg-transparent border-none text-3xl font-bold placeholder-gray-400 focus:outline-none mb-6 font-serif ${
+                isDark ? "text-white" : "text-gray-800"
+              }`}
             />
             <textarea
               placeholder="Note to self..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full min-h-[60vh] bg-transparent border-none text-lg text-gray-100 placeholder-gray-500 focus:outline-none resize-none leading-relaxed font-light"
+              className={`w-full min-h-[60vh] bg-transparent border-none text-lg placeholder-gray-500 focus:outline-none resize-none leading-relaxed font-light ${
+                isDark ? "text-gray-100" : "text-gray-700"
+              }`}
               style={{ height: 'auto' }}
             />
           </div>
