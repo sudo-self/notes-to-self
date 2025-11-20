@@ -26,7 +26,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Toast 
+// Toast Component
 const Toast = ({ message, type = "success", onClose }: { 
   message: string; 
   type?: "success" | "error";
@@ -61,7 +61,7 @@ const Toast = ({ message, type = "success", onClose }: {
   );
 };
 
-// Theme
+// Theme Toggle Component
 const ThemeToggle = ({ theme, onThemeChange }: { theme: Theme; onThemeChange: (theme: Theme) => void }) => {
   const [mounted, setMounted] = useState(false);
 
@@ -92,7 +92,7 @@ const ThemeToggle = ({ theme, onThemeChange }: { theme: Theme; onThemeChange: (t
   );
 };
 
-// Enhanced Note 
+// Enhanced Note Item
 const EnhancedNoteItem = React.memo(({ 
   note, 
   isSelected, 
@@ -342,19 +342,38 @@ const EnhancedNotesApp = () => {
   } | null>(null);
   const [theme, setTheme] = useState<Theme>("dark");
 
-  // prevent infinite loops
+  // Use refs to prevent infinite loops
   const autoSaveInProgress = useRef(false);
   const lastSavedContent = useRef({ title: "", content: "" });
 
-  // Theme 
+  // Theme effect - FIXED to work properly
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "dark") {
       root.classList.add("dark");
+      root.style.colorScheme = "dark";
     } else {
       root.classList.remove("dark");
+      root.style.colorScheme = "light";
     }
+    
+    // Store theme preference
+    localStorage.setItem("theme", theme);
   }, [theme]);
+
+  // Initialize theme from localStorage or system preference
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as Theme;
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    if (savedTheme) {
+      setTheme(savedTheme);
+    } else if (systemPrefersDark) {
+      setTheme("dark");
+    } else {
+      setTheme("light");
+    }
+  }, []);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
@@ -393,7 +412,7 @@ const EnhancedNotesApp = () => {
     try {
       const textToShare = note.title ? `${note.title}\n\n${note.content}` : note.content;
       
-      // Web Share 
+      // Web Share API
       if (navigator.share) {
         await navigator.share({
           title: note.title || 'Note from NTS',
@@ -402,13 +421,13 @@ const EnhancedNotesApp = () => {
         });
         showToast("Note shared!");
       } else {
-        // Fallback
+        // Fallback to clipboard
         await navigator.clipboard.writeText(textToShare);
         showToast("Note copied to clipboard (share not available)");
       }
       return true;
     } catch (error) {
-      // User cancelled 
+      // User cancelled share
       if (error instanceof Error && error.name !== 'AbortError') {
         console.error("Failed to share note:", error);
         showToast("Failed to share note", "error");
@@ -425,7 +444,7 @@ const EnhancedNotesApp = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Character count 
+  // Character count and change detection
   useEffect(() => {
     setCharacterCount(content.length);
     
@@ -436,7 +455,7 @@ const EnhancedNotesApp = () => {
     setHasUnsavedChanges(isChanged);
   }, [title, content, selectedNote]);
 
-  // Auto-save functionality 
+  // Auto-save functionality
   useEffect(() => {
     if (autoSave && 
         hasUnsavedChanges && 
@@ -452,7 +471,7 @@ const EnhancedNotesApp = () => {
         if (!saving) {
           saveNote();
         }
-      }, 2000); // prevent rapid firing
+      }, 2000);
       
       return () => {
         clearTimeout(autoSaveTimer);
@@ -500,7 +519,7 @@ const EnhancedNotesApp = () => {
   const saveNote = async () => {
     if ((!title.trim() && !content.trim()) || !user || !hasUnsavedChanges) return;
     
-    // Prevent multiple
+    // Prevent multiple saves of the same content
     if (title === lastSavedContent.current.title && content === lastSavedContent.current.content) {
       return;
     }
@@ -696,6 +715,11 @@ const EnhancedNotesApp = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
+        {/* Theme Toggle - Top Right Corner */}
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle theme={theme} onThemeChange={setTheme} />
+        </div>
+        
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
@@ -793,7 +817,7 @@ const EnhancedNotesApp = () => {
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-blue-500/25"
             >
               <Plus className="w-5 h-5" />
-              New Note
+              Note
             </button>
           </div>
         </div>
@@ -804,7 +828,7 @@ const EnhancedNotesApp = () => {
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search notes..."
+              placeholder=" "
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-2 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
