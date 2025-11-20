@@ -1,6 +1,6 @@
 // FILE: app/layout.tsx
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -14,17 +14,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#7c3aed",
+};
+
 export const metadata: Metadata = {
   title: "NTS - Notes To Self",
   description:
     "Write notes, keep them private or share them with the team. Github OAuth and Turso DB serverless app",
   manifest: "/manifest.json",
-  themeColor: "#7c3aed",
+
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "NTS - Notes To Self",
   },
+
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -33,6 +38,7 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-touch-icon.png" }],
   },
+
   openGraph: {
     title: "NTS - Notes To Self",
     description:
@@ -49,13 +55,15 @@ export const metadata: Metadata = {
     ],
     type: "website",
   },
+
   twitter: {
     card: "summary_large_image",
     title: "NTS - Notes To Self",
     description:
       "Write notes, keep them private or share them with the team. Github OAuth and Turso DB serverless app",
-    images: ["https://notes-to-self.vercel.app/icon-512.png"], // FIXED
+    images: ["https://notes-to-self.vercel.app/icon-512.png"],
   },
+
   metadataBase: new URL("https://notes-to-self.vercel.app"),
 };
 
