@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Trash2, Plus, LogOut, Github, Save, Search, Notebook, SortAsc, SortDesc } from "lucide-react";
 
 type SortOption = "updated_desc" | "updated_asc" | "title_asc" | "title_desc";
@@ -19,6 +19,50 @@ interface User {
   avatar_url?: string;
 }
 
+// Memoized
+const NoteItem = React.memo(({ 
+  note, 
+  isSelected, 
+  onSelect, 
+  onDelete 
+}: { 
+  note: Note;
+  isSelected: boolean;
+  onSelect: (note: Note) => void;
+  onDelete: (noteId: string) => void;
+}) => (
+  <div
+    onClick={() => onSelect(note)}
+    className={`p-4 border-b border-white/10 cursor-pointer transition-all hover:bg-white/5 ${
+      isSelected ? "bg-white/10 border-l-4 border-pink-500" : ""
+    }`}
+  >
+    <div className="flex items-start justify-between gap-2">
+      <div className="flex-1 min-w-0">
+        <h3 className="text-white font-semibold truncate">{note.title}</h3>
+        <p className="text-purple-300 text-sm truncate mt-1">
+          {note.content.substring(0, 50) || "No content"}
+        </p>
+        <p className="text-purple-400 text-xs mt-2">
+          {new Date(note.updated_at).toLocaleDateString("en-GB")}
+        </p>
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(note.id);
+        }}
+        className="text-purple-400 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-white/10"
+        title="Delete note"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+);
+
+NoteItem.displayName = 'NoteItem';
+
 const NotesApp = () => {
   const [user, setUser] = useState<User | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -26,30 +70,43 @@ const NotesApp = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
-
   const [sortOption, setSortOption] = useState<SortOption>("updated_desc");
+
+  // Debounce 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const handleGitHubLogin = () => {
     window.location.href = "/api/auth/github";
   };
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout");
-    setUser(null);
-    setNotes([]);
-    setSelectedNote(null);
-    setTitle("");
-    setContent("");
+    try {
+      await fetch("/api/auth/logout");
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+      setNotes([]);
+      setSelectedNote(null);
+      setTitle("");
+      setContent("");
+    }
   };
 
-  const loadNotes = async () => {
+  const loadNotes = useCallback(async () => {
     if (!user) return;
+    
     setLoading(true);
     try {
-      console.log("Loading notes for user:", user.id);
       const res = await fetch(`/api/notes?userId=${user.id}`);
       
       if (!res.ok) {
@@ -58,31 +115,26 @@ const NotesApp = () => {
       }
       
       const data = await res.json();
-      console.log("Loaded notes:", data.length);
       setNotes(data);
     } catch (err) {
       console.error("Failed to load notes:", err);
-      
-      if (err instanceof Error) {
-        alert("Failed to load notes: " + err.message);
-      } else {
-        alert("Failed to load notes: An unknown error occurred");
-      }
+      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+      alert("Failed to load notes: " + errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const saveNote = async () => {
-    if (!title.trim() && !content.trim()) return;
-    if (!user) return;
+    if ((!title.trim() && !content.trim()) || !user) return;
+    
     setSaving(true);
 
     const payload = {
       id: selectedNote?.id,
       userId: user.id,
-      title: title || "Untitled",
-      content,
+      title: title.trim() || "Untitled",
+      content: content.trim(),
     };
 
     try {
@@ -93,18 +145,14 @@ const NotesApp = () => {
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        console.error("API Error:", text);
-        alert("Save failed: " + text);
-        return;
+        const errorText = await res.text();
+        throw new Error(errorText || "Save failed");
       }
 
       const savedNote: Note = await res.json();
 
-      if (!savedNote || !savedNote.id) {
-        console.error("Invalid JSON returned:", savedNote);
-        alert("Server returned invalid data");
-        return;
+      if (!savedNote?.id) {
+        throw new Error("Server returned invalid data");
       }
 
       if (selectedNote) {
@@ -116,12 +164,8 @@ const NotesApp = () => {
       }
     } catch (err) {
       console.error("saveNote() error:", err);
-      
-      if (err instanceof Error) {
-        alert("Save failed: " + err.message);
-      } else {
-        alert("Save failed: An unknown error occurred");
-      }
+      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+      alert("Save failed: " + errorMessage);
     } finally {
       setSaving(false);
     }
@@ -133,29 +177,36 @@ const NotesApp = () => {
     setContent("");
   };
 
-  const selectNote = (note: Note) => {
+  const selectNote = useCallback((note: Note) => {
     setSelectedNote(note);
     setTitle(note.title);
     setContent(note.content);
-  };
+  }, []);
 
   const deleteNote = async (noteId: string) => {
     if (!confirm("Delete this note?")) return;
+    
     try {
-      await fetch(`/api/notes?noteId=${noteId}`, { method: "DELETE" });
+      const res = await fetch(`/api/notes?noteId=${noteId}`, { 
+        method: "DELETE" 
+      });
+      
+      if (!res.ok) {
+        throw new Error("Delete request failed");
+      }
+      
       setNotes(notes.filter((n) => n.id !== noteId));
-      if (selectedNote?.id === noteId) createNewNote();
+      if (selectedNote?.id === noteId) {
+        createNewNote();
+      }
     } catch (err) {
       console.error("Delete error:", err);
-      
-      if (err instanceof Error) {
-        alert("Delete failed: " + err.message);
-      } else {
-        alert("Delete failed: An unknown error occurred");
-      }
+      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+      alert("Delete failed: " + errorMessage);
     }
   };
 
+  // Memoized 
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
     sortableNotes.sort((a, b) => {
@@ -175,11 +226,25 @@ const NotesApp = () => {
     return sortableNotes;
   }, [notes, sortOption]);
 
-  const filteredNotes = getSortedNotes.filter(
-    (note) =>
-      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+ 
+  const filteredNotes = useMemo(() => {
+    return getSortedNotes.filter(
+      (note) =>
+        note.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        note.content.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+  }, [getSortedNotes, debouncedSearch]);
+
+  // Auto-save functionality (optional - uncomment if desired)
+  // useEffect(() => {
+  //   if (!title.trim() && !content.trim()) return;
+  //   
+  //   const autoSaveTimer = setTimeout(() => {
+  //     saveNote();
+  //   }, 2000);
+  //   
+  //   return () => clearTimeout(autoSaveTimer);
+  // }, [title, content]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -189,16 +254,22 @@ const NotesApp = () => {
         if (res.ok) {
           const u: User = await res.json();
           setUser(u);
-          await loadNotes();
         }
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch user:", err);
       } finally {
         setLoading(false);
       }
     };
     fetchUser();
   }, []);
+
+  // Load notes when user changes
+  useEffect(() => {
+    if (user) {
+      loadNotes();
+    }
+  }, [user, loadNotes]);
 
   useEffect(() => {
     const updateClock = () => {
@@ -215,6 +286,7 @@ const NotesApp = () => {
         })
       );
     };
+    
     updateClock();
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
@@ -248,9 +320,9 @@ const NotesApp = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex">
-   
+      {/* Sidebar */}
       <div className="w-80 bg-black/30 backdrop-blur-lg border-r border-white/10 flex flex-col">
-      
+        {/* User Info & New Note */}
         <div className="p-4 border-b border-white/10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -278,7 +350,7 @@ const NotesApp = () => {
           </button>
         </div>
 
-     
+        {/* Search & Sort */}
         <div className="p-4 border-b border-white/10">
           <div className="relative mb-3">
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
@@ -326,51 +398,29 @@ const NotesApp = () => {
           </div>
         </div>
 
-      
+        {/* Notes List */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-center text-purple-300">Loading...</div>
           ) : filteredNotes.length === 0 ? (
             <div className="p-4 text-center text-purple-300">
-              {searchQuery ? "No notes found matching your search" : "No notes yet"}
+              {debouncedSearch ? "No notes found matching your search" : "No notes yet"}
             </div>
           ) : (
             filteredNotes.map((note) => (
-              <div
+              <NoteItem
                 key={note.id}
-                onClick={() => selectNote(note)}
-                className={`p-4 border-b border-white/10 cursor-pointer transition-all hover:bg-white/5 ${
-                  selectedNote?.id === note.id ? "bg-white/10 border-l-4 border-pink-500" : ""
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold truncate">{note.title}</h3>
-                    <p className="text-purple-300 text-sm truncate mt-1">
-                      {note.content.substring(0, 50) || "No content"}
-                    </p>
-                    <p className="text-purple-400 text-xs mt-2">
-                      {new Date(note.updated_at).toLocaleDateString("en-GB")}
-                    </p>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteNote(note.id);
-                    }}
-                    className="text-purple-400 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-white/10"
-                    title="Delete note"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+                note={note}
+                isSelected={selectedNote?.id === note.id}
+                onSelect={selectNote}
+                onDelete={deleteNote}
+              />
             ))
           )}
         </div>
       </div>
 
-
+      {/* Editor */}
       <div className="flex-1 flex flex-col">
         <div className="p-6 border-b border-white/10 flex items-center justify-between bg-black/20 backdrop-blur-lg">
           <div className="text-purple-200 text-sm">
@@ -403,6 +453,7 @@ const NotesApp = () => {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="w-full h-full bg-transparent border-none text-lg text-purple-100 placeholder-purple-300/50 focus:outline-none resize-none"
+            rows={10}
           />
         </div>
       </div>
