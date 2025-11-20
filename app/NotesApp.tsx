@@ -1,9 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Trash2, Plus, LogOut, Github, Save, Search, Notebook, SortAsc, SortDesc } from "lucide-react";
+import { 
+  Trash2, Plus, LogOut, Github, Save, Search, Notebook, 
+  SortAsc, SortDesc, Edit3, Clock, User, FileText, 
+  BookOpen, Zap, Moon, Sun, Menu, X, Shield, RotateCcw,
+  Type, Hash, Calendar
+} from "lucide-react";
 
 type SortOption = "updated_desc" | "updated_asc" | "title_asc" | "title_desc";
+type ViewMode = "edit" | "preview";
 
 interface Note {
   id: string;
@@ -19,8 +25,8 @@ interface User {
   avatar_url?: string;
 }
 
-// Memoized Note 
-const NoteItem = React.memo(({ 
+// Enhanced Note Item with better visual design
+const EnhancedNoteItem = React.memo(({ 
   note, 
   isSelected, 
   onSelect, 
@@ -30,40 +36,109 @@ const NoteItem = React.memo(({
   isSelected: boolean;
   onSelect: (note: Note) => void;
   onDelete: (noteId: string) => void;
-}) => (
-  <div
-    onClick={() => onSelect(note)}
-    className={`p-4 border-b border-white/10 cursor-pointer transition-all hover:bg-white/5 ${
-      isSelected ? "bg-white/10 border-l-4 border-pink-500" : ""
-    }`}
-  >
-    <div className="flex items-start justify-between gap-2">
-      <div className="flex-1 min-w-0">
-        <h3 className="text-white font-semibold truncate">{note.title}</h3>
-        <p className="text-purple-300 text-sm truncate mt-1">
-          {note.content.substring(0, 50) || "No content"}
-        </p>
-        <p className="text-purple-400 text-xs mt-2">
-          {new Date(note.updated_at).toLocaleDateString("en-GB")}
-        </p>
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return date.toLocaleTimeString("en-GB", { hour: '2-digit', minute: '2-digit' });
+    } else if (diffDays === 1) {
+      return "Yesterday";
+    } else if (diffDays < 7) {
+      return date.toLocaleDateString("en-GB", { weekday: 'short' });
+    } else {
+      return date.toLocaleDateString("en-GB", { day: 'numeric', month: 'short' });
+    }
+  };
+
+  return (
+    <div
+      onClick={() => onSelect(note)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`p-4 border-b border-gray-700/50 cursor-pointer transition-all duration-300 group ${
+        isSelected 
+          ? "bg-gradient-to-r from-blue-500/15 to-purple-500/15 border-l-4 border-blue-400 shadow-inner" 
+          : "hover:bg-gray-700/20 hover:border-l-4 hover:border-gray-500/50"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <FileText className="w-4 h-4 text-blue-400" />
+            <h3 className="text-white font-semibold truncate text-base">
+              {note.title || "Untitled Note"}
+            </h3>
+          </div>
+          <p className="text-gray-300 text-sm line-clamp-2 mb-3 leading-relaxed">
+            {note.content.substring(0, 100) || "No content yet..."}
+          </p>
+          <div className="flex items-center gap-3 text-xs">
+            <div className="flex items-center gap-1 text-gray-400">
+              <Clock className="w-3 h-3" />
+              <span>{formatDate(note.updated_at)}</span>
+            </div>
+            {note.content.length > 0 && (
+              <div className="flex items-center gap-1 text-gray-400">
+                <Type className="w-3 h-3" />
+                <span>{note.content.length} chars</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(note.id);
+          }}
+          className={`text-gray-400 hover:text-red-400 transition-all duration-300 p-2 rounded-lg ${
+            isHovered || isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          } hover:bg-gray-600/50 transform hover:scale-110`}
+          title="Delete note"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(note.id);
-        }}
-        className="text-purple-400 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-white/10 flex-shrink-0"
-        title="Delete note"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
+    </div>
+  );
+});
+
+EnhancedNoteItem.displayName = 'EnhancedNoteItem';
+
+// Loading Skeleton Component
+const NoteSkeleton = () => (
+  <div className="p-4 border-b border-gray-700/50 animate-pulse">
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 bg-gray-600/30 rounded-lg"></div>
+      <div className="flex-1 space-y-2">
+        <div className="h-4 bg-gray-600/30 rounded w-3/4"></div>
+        <div className="h-3 bg-gray-600/30 rounded w-full"></div>
+        <div className="h-3 bg-gray-600/30 rounded w-1/2"></div>
+      </div>
     </div>
   </div>
-));
+);
 
-NoteItem.displayName = 'NoteItem';
+// Stats Component
+const StatsPanel = ({ notes, characterCount }: { notes: Note[], characterCount: number }) => (
+  <div className="flex items-center gap-4 text-xs text-gray-400">
+    <div className="flex items-center gap-1">
+      <BookOpen className="w-3 h-3" />
+      <span>{notes.length} notes</span>
+    </div>
+    <div className="flex items-center gap-1">
+      <Type className="w-3 h-3" />
+      <span>{characterCount} chars</span>
+    </div>
+  </div>
+);
 
-const NotesApp = () => {
+const EnhancedNotesApp = () => {
   const [user, setUser] = useState<User | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -75,14 +150,43 @@ const NotesApp = () => {
   const [saving, setSaving] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("updated_desc");
+  const [viewMode, setViewMode] = useState<ViewMode>("edit");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [characterCount, setCharacterCount] = useState(0);
+  const [autoSave, setAutoSave] = useState(true);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Debounce 
+  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // Character count and change detection
+  useEffect(() => {
+    setCharacterCount(content.length);
+    
+    const isChanged = selectedNote 
+      ? title !== selectedNote.title || content !== selectedNote.content
+      : title.trim() !== "" || content.trim() !== "";
+    
+    setHasUnsavedChanges(isChanged);
+  }, [title, content, selectedNote]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (autoSave && hasUnsavedChanges && user && (title.trim() || content.trim())) {
+      const autoSaveTimer = setTimeout(() => {
+        if (!saving) {
+          saveNote();
+        }
+      }, 1500);
+      
+      return () => clearTimeout(autoSaveTimer);
+    }
+  }, [title, content, autoSave, hasUnsavedChanges]);
 
   const handleGitHubLogin = () => {
     window.location.href = "/api/auth/github";
@@ -108,32 +212,24 @@ const NotesApp = () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/notes?userId=${user.id}`);
-      
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `HTTP ${res.status}`);
-      }
-      
+      if (!res.ok) throw new Error("Failed to load notes");
       const data = await res.json();
       setNotes(data);
     } catch (err) {
       console.error("Failed to load notes:", err);
-      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
-      alert("Failed to load notes: " + errorMessage);
     } finally {
       setLoading(false);
     }
   }, [user]);
 
   const saveNote = async () => {
-    if ((!title.trim() && !content.trim()) || !user) return;
+    if ((!title.trim() && !content.trim()) || !user || !hasUnsavedChanges) return;
     
     setSaving(true);
-
     const payload = {
       id: selectedNote?.id,
       userId: user.id,
-      title: title.trim() || "Untitled",
+      title: title.trim() || "Untitled Note",
       content: content.trim(),
     };
 
@@ -144,16 +240,8 @@ const NotesApp = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Save failed");
-      }
-
+      if (!res.ok) throw new Error("Save failed");
       const savedNote: Note = await res.json();
-
-      if (!savedNote?.id) {
-        throw new Error("Server returned invalid data");
-      }
 
       if (selectedNote) {
         setNotes(notes.map((n) => (n.id === savedNote.id ? savedNote : n)));
@@ -162,38 +250,43 @@ const NotesApp = () => {
         setNotes([savedNote, ...notes]);
         setSelectedNote(savedNote);
       }
+      setHasUnsavedChanges(false);
     } catch (err) {
-      console.error("saveNote() error:", err);
-      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
-      alert("Save failed: " + errorMessage);
+      console.error("Save error:", err);
     } finally {
       setSaving(false);
     }
   };
 
   const createNewNote = () => {
+    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Create new note anyway?")) {
+      return;
+    }
     setSelectedNote(null);
     setTitle("");
     setContent("");
+    setHasUnsavedChanges(false);
   };
 
   const selectNote = useCallback((note: Note) => {
+    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Switch note anyway?")) {
+      return;
+    }
     setSelectedNote(note);
     setTitle(note.title);
     setContent(note.content);
-  }, []);
+    setHasUnsavedChanges(false);
+  }, [hasUnsavedChanges]);
 
   const deleteNote = async (noteId: string) => {
-    if (!confirm("Delete this note?")) return;
+    if (!confirm("Are you sure you want to delete this note? This action cannot be undone.")) return;
     
     try {
       const res = await fetch(`/api/notes?noteId=${noteId}`, { 
         method: "DELETE" 
       });
       
-      if (!res.ok) {
-        throw new Error("Delete request failed");
-      }
+      if (!res.ok) throw new Error("Delete request failed");
       
       setNotes(notes.filter((n) => n.id !== noteId));
       if (selectedNote?.id === noteId) {
@@ -201,12 +294,11 @@ const NotesApp = () => {
       }
     } catch (err) {
       console.error("Delete error:", err);
-      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
-      alert("Delete failed: " + errorMessage);
+      alert("Failed to delete note");
     }
   };
 
-  // Memoized 
+  // Memoized sorted notes
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
     sortableNotes.sort((a, b) => {
@@ -226,7 +318,7 @@ const NotesApp = () => {
     return sortableNotes;
   }, [notes, sortOption]);
 
-  // Memoized 
+  // Memoized filtered notes
   const filteredNotes = useMemo(() => {
     return getSortedNotes.filter(
       (note) =>
@@ -235,6 +327,7 @@ const NotesApp = () => {
     );
   }, [getSortedNotes, debouncedSearch]);
 
+  // User and notes loading
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
@@ -253,13 +346,13 @@ const NotesApp = () => {
     fetchUser();
   }, []);
 
-  // Load notes
   useEffect(() => {
     if (user) {
       loadNotes();
     }
   }, [user, loadNotes]);
 
+  // Real-time clock
   useEffect(() => {
     const updateClock = () => {
       setCurrentTime(
@@ -283,77 +376,102 @@ const NotesApp = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <Notebook className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">NTS</h1>
-            <p className="text-purple-200 mb-1">Notes To Self</p>
-            <p className="text-cyan-200 text-xs">{currentTime}</p>
+            <p className="text-blue-200 mb-2">Notes To Self</p>
+            <p className="text-cyan-200 text-xs font-mono">{currentTime}</p>
           </div>
 
           <button
             onClick={handleGitHubLogin}
             disabled={loading}
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+            className="w-full bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl border border-gray-600"
           >
             <Github className="w-5 h-5" />
-            {loading ? "Connecting..." : "Sign in"}
+            {loading ? "Connecting..." : "Continue with GitHub"}
           </button>
+          
+          <div className="mt-6 text-center text-gray-400 text-sm">
+            <div className="flex items-center justify-center gap-2">
+              <Shield className="w-4 h-4" />
+              <span>Your notes are private and secure</span>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex">
-      {/* Sidebar - Fixed width with proper scrolling */}
-      <div className="w-80 bg-black/30 backdrop-blur-lg border-r border-white/10 flex flex-col h-screen">
-        {/* User Info & New Note - Fixed height */}
-        <div className="p-4 border-b border-white/10 flex-shrink-0">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex">
+      {/* Mobile Sidebar Toggle */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 bg-gray-800/90 backdrop-blur-sm text-white p-2 rounded-lg border border-gray-600"
+      >
+        {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </button>
+
+      {/* Sidebar */}
+      <div className={`
+        w-80 bg-gray-800/80 backdrop-blur-lg border-r border-gray-700/50 flex flex-col h-screen transition-transform duration-300
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        fixed lg:relative z-40
+      `}>
+        {/* User Info & New Note */}
+        <div className="p-4 border-b border-gray-700/50 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <img
                 src={user.avatar_url || "./avatar-192.png"}
                 alt="User avatar"
-                className="w-10 h-10 rounded-lg object-cover"
+                className="w-10 h-10 rounded-lg object-cover border-2 border-blue-400/50"
               />
-              <p className="text-cyan-200 text-xs">@{user.login}</p>
+              <div>
+                <p className="text-white text-sm font-medium">@{user.login}</p>
+                <StatsPanel notes={notes} characterCount={characterCount} />
+              </div>
             </div>
             <button
               onClick={handleLogout}
-              className="text-purple-300 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700/50"
               title="Logout"
             >
               <LogOut className="w-5 h-5" />
             </button>
           </div>
-          <button
-            onClick={createNewNote}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg"
-          >
-            <Plus className="w-5 h-5" />
-            New
-          </button>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={createNewNote}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-blue-500/25"
+            >
+              <Plus className="w-5 h-5" />
+              New Note
+            </button>
+          </div>
         </div>
 
-        {/* Search & Sort - Fixed height */}
-        <div className="p-4 border-b border-white/10 flex-shrink-0">
-          <div className="relative mb-3">
-            <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
+        {/* Search & Sort */}
+        <div className="p-4 border-b border-gray-700/50 flex-shrink-0 space-y-3">
+          <div className="relative">
+            <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-white placeholder-purple-300 focus:outline-none focus:border-purple-500 transition-colors"
+              className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-2 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
             />
           </div>
        
           <div className="flex items-center justify-between">
-            <label htmlFor="sort-select" className="text-sm text-purple-300">
+            <label htmlFor="sort-select" className="text-sm text-gray-400">
               Sort by:
             </label>
             <div className="relative">
@@ -361,22 +479,22 @@ const NotesApp = () => {
                 id="sort-select"
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="block w-full bg-white/5 border border-white/10 rounded-lg py-1 px-3 text-sm text-white focus:outline-none focus:border-purple-500 appearance-none pr-8 cursor-pointer transition-colors"
+                className="block w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-1 px-3 text-sm text-white focus:outline-none focus:border-blue-500 appearance-none pr-8 cursor-pointer transition-colors"
               >
-                <option value="updated_desc" className="bg-slate-800 text-white">
+                <option value="updated_desc" className="bg-gray-800 text-white">
                   Latest Update
                 </option>
-                <option value="updated_asc" className="bg-slate-800 text-white">
+                <option value="updated_asc" className="bg-gray-800 text-white">
                   Oldest Update
                 </option>
-                <option value="title_asc" className="bg-slate-800 text-white">
+                <option value="title_asc" className="bg-gray-800 text-white">
                   Title (A-Z)
                 </option>
-                <option value="title_desc" className="bg-slate-800 text-white">
+                <option value="title_desc" className="bg-gray-800 text-white">
                   Title (Z-A)
                 </option>
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-purple-300">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
                 {sortOption.includes("asc") ? (
                   <SortAsc className="w-4 h-4" />
                 ) : (
@@ -387,17 +505,27 @@ const NotesApp = () => {
           </div>
         </div>
 
-        {/* Notes List - Scrollable area */}
+        {/* Notes List */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="p-4 text-center text-purple-300">Loading...</div>
+            <div className="space-y-1">
+              {[...Array(5)].map((_, i) => (
+                <NoteSkeleton key={i} />
+              ))}
+            </div>
           ) : filteredNotes.length === 0 ? (
-            <div className="p-4 text-center text-purple-300">
-              {debouncedSearch ? "No notes found matching your search" : "No notes yet"}
+            <div className="p-8 text-center text-gray-400">
+              <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg mb-2">
+                {debouncedSearch ? "No notes found" : "No notes yet"}
+              </p>
+              <p className="text-sm">
+                {debouncedSearch ? "Try adjusting your search" : "Create your first note to get started"}
+              </p>
             </div>
           ) : (
             filteredNotes.map((note) => (
-              <NoteItem
+              <EnhancedNoteItem
                 key={note.id}
                 note={note}
                 isSelected={selectedNote?.id === note.id}
@@ -409,43 +537,77 @@ const NotesApp = () => {
         </div>
       </div>
 
-      {/* Editor - Flexible width with proper scrolling */}
+      {/* Editor */}
       <div className="flex-1 flex flex-col h-screen">
-        {/* Editor Header - Fixed height */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-black/20 backdrop-blur-lg flex-shrink-0">
-          <div className="text-purple-200 text-sm">
-            {selectedNote ? "Editing note" : "New note"}
-            {selectedNote && (
-              <span className="ml-4 text-purple-400 text-xs">
-                Last updated: {new Date(selectedNote.updated_at).toLocaleString()}
-              </span>
+        {/* Editor Header */}
+        <div className="p-6 border-b border-gray-700/50 flex items-center justify-between bg-gray-800/50 backdrop-blur-lg flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="text-gray-300 text-sm">
+              {selectedNote ? (
+                <div className="flex items-center gap-2">
+                  <Edit3 className="w-4 h-4" />
+                  <span>Editing note</span>
+                  <span className="text-gray-500">•</span>
+                  <span className="text-gray-400 text-xs">
+                    <Calendar className="w-3 h-3 inline mr-1" />
+                    {new Date(selectedNote.updated_at).toLocaleDateString("en-GB")}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  <span>New note</span>
+                </div>
+              )}
+            </div>
+            
+            {hasUnsavedChanges && (
+              <div className="flex items-center gap-1 text-amber-400 text-xs">
+                <Zap className="w-3 h-3" />
+                <span>Unsaved changes</span>
+              </div>
             )}
           </div>
-          <button
-            onClick={saveNote}
-            disabled={saving || (!title.trim() && !content.trim())}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold py-2 px-6 rounded-lg flex items-center gap-2 transition-all disabled:opacity-50 shadow-lg"
-          >
-            <Save className="w-4 h-4" />
-            {saving ? "Saving..." : "Save"}
-          </button>
+          
+          <div className="flex items-center gap-3">
+            <StatsPanel notes={[selectedNote].filter(Boolean) as Note[]} characterCount={characterCount} />
+            
+            <div className="flex items-center gap-2 bg-gray-700/50 rounded-lg p-1">
+              <button
+                onClick={() => setAutoSave(!autoSave)}
+                className={`p-1 rounded text-xs ${autoSave ? 'text-green-400' : 'text-gray-400'}`}
+                title={autoSave ? "Auto-save enabled" : "Auto-save disabled"}
+              >
+                <Save className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <button
+              onClick={saveNote}
+              disabled={saving || !hasUnsavedChanges}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-2 px-6 rounded-lg flex items-center gap-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-blue-500/25"
+            >
+              {saving ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saving ? "Saving..." : "Save"}
+            </button>
+          </div>
         </div>
 
-        {/* Editor Content - Scrollable area */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-6">
+        {/* Editor Content */}
+        <div className="flex-1 overflow-y-auto bg-gray-900/30">
+          <div className="max-w-4xl mx-auto p-6">
             <input
               type="text"
-              placeholder="Title..."
+              placeholder="Note title..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-transparent border-none text-3xl font-bold text-white placeholder-purple-300/50 focus:outline-none mb-6"
+              className="w-full bg-transparent border-none text-3xl font-bold text-white placeholder-gray-400 focus:outline-none mb-6 font-serif"
             />
             <textarea
-              placeholder="Note to self..."
+              placeholder="Start writing your thoughts..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full min-h-[500px] bg-transparent border-none text-lg text-purple-100 placeholder-purple-300/50 focus:outline-none resize-none"
+              className="w-full min-h-[60vh] bg-transparent border-none text-lg text-gray-100 placeholder-gray-500 focus:outline-none resize-none leading-relaxed font-light"
               style={{ height: 'auto' }}
             />
           </div>
@@ -455,4 +617,4 @@ const NotesApp = () => {
   );
 };
 
-export default NotesApp;
+export default EnhancedNotesApp;
