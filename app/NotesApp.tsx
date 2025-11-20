@@ -10,7 +10,6 @@ import {
 
 type SortOption = "updated_desc" | "updated_asc" | "title_asc" | "title_desc";
 type ViewMode = "edit" | "preview";
-type Theme = "light" | "dark";
 
 interface Note {
   id: string;
@@ -58,37 +57,6 @@ const Toast = ({ message, type = "success", onClose }: {
         </button>
       </div>
     </div>
-  );
-};
-
-// Theme Toggle Component
-const ThemeToggle = ({ theme, onThemeChange }: { theme: Theme; onThemeChange: (theme: Theme) => void }) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <button className="p-2 rounded-lg text-gray-400 hover:bg-gray-700/50 transition-all duration-300">
-        <Moon className="w-5 h-5" />
-      </button>
-    );
-  }
-
-  return (
-    <button
-      onClick={() => onThemeChange(theme === "dark" ? "light" : "dark")}
-      className="p-2 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-700/50 transition-all duration-300 group"
-      title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-    >
-      {theme === "dark" ? (
-        <Sun className="w-5 h-5 group-hover:scale-110 transition-transform" />
-      ) : (
-        <Moon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-      )}
-    </button>
   );
 };
 
@@ -340,38 +308,38 @@ const EnhancedNotesApp = () => {
     message: string;
     onConfirm: () => void;
   } | null>(null);
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [isDark, setIsDark] = useState(true);
 
   // Use refs to prevent infinite loops
   const autoSaveInProgress = useRef(false);
   const lastSavedContent = useRef({ title: "", content: "" });
 
-  // Theme effect - FIXED to work properly
+  // Theme effect - SIMPLIFIED and WORKING
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
+    if (isDark) {
       root.classList.add("dark");
-      root.style.colorScheme = "dark";
     } else {
       root.classList.remove("dark");
-      root.style.colorScheme = "light";
     }
     
     // Store theme preference
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
 
   // Initialize theme from localStorage or system preference
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as Theme;
+    const savedTheme = localStorage.getItem("theme");
     const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     
-    if (savedTheme) {
-      setTheme(savedTheme);
+    if (savedTheme === "light") {
+      setIsDark(false);
+    } else if (savedTheme === "dark") {
+      setIsDark(true);
     } else if (systemPrefersDark) {
-      setTheme("dark");
+      setIsDark(true);
     } else {
-      setTheme("light");
+      setIsDark(false);
     }
   }, []);
 
@@ -717,7 +685,17 @@ const EnhancedNotesApp = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
         {/* Theme Toggle - Top Right Corner */}
         <div className="fixed top-4 right-4 z-50">
-          <ThemeToggle theme={theme} onThemeChange={setTheme} />
+          <button
+            onClick={() => setIsDark(!isDark)}
+            className="p-2 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-700/50 transition-all duration-300 group"
+            title={`Switch to ${isDark ? "light" : "dark"} mode`}
+          >
+            {isDark ? (
+              <Sun className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            ) : (
+              <Moon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            )}
+          </button>
         </div>
         
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
@@ -800,7 +778,17 @@ const EnhancedNotesApp = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <ThemeToggle theme={theme} onThemeChange={setTheme} />
+              <button
+                onClick={() => setIsDark(!isDark)}
+                className="p-2 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-700/50 transition-all duration-300 group"
+                title={`Switch to ${isDark ? "light" : "dark"} mode`}
+              >
+                {isDark ? (
+                  <Sun className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                ) : (
+                  <Moon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                )}
+              </button>
               <button
                 onClick={handleLogout}
                 className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700/50"
@@ -817,7 +805,7 @@ const EnhancedNotesApp = () => {
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-blue-500/25"
             >
               <Plus className="w-5 h-5" />
-              Note
+              New Note
             </button>
           </div>
         </div>
@@ -828,7 +816,7 @@ const EnhancedNotesApp = () => {
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder=" "
+              placeholder="Search notes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-gray-700/50 border border-gray-600/50 rounded-lg py-2 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
