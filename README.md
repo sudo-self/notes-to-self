@@ -31,6 +31,18 @@
 
 - https://YOUR_DOMAIN_HERE/api/auth/github
 
+### <a href="https://github.com/sudo-self/notes-to-self/blob/main/env.example.txt">.env</a>
+
+- GITHUB_CLIENT_ID=
+- GITHUB_CLIENT_SECRET=
+- TURSO_DB_URL=
+- TURSO_TOKEN=
+- NEXT_PUBLIC_BASE_URL=
+- TURSO_DB_TOKEN=
+- TURSO_AUTH_TOKEN=
+
+
+
 #### TABLE
 
 ```
