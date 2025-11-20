@@ -674,7 +674,7 @@ const EnhancedNotesApp = () => {
           <div className="mt-6 text-center text-gray-400 text-sm">
             <div className="flex items-center justify-center gap-2">
               <BookAlert className="w-4 h-4" />
-              <span>Notes secure NTS does not access your account</span>
+              <span>NTS does not access your account</span>
             </div>
           </div>
         </div>
