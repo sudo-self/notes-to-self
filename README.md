@@ -43,7 +43,7 @@
 
 
 
-- schema.sql
+#### schema.sql
 
 ```
 CREATE TABLE IF NOT EXISTS notes (
@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS notes (
 CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
 CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at);
 ```
+
+#### API DEBUG ROUTE
 
 - app/api/auth/debug/route.ts
 
