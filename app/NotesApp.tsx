@@ -59,7 +59,7 @@ const NoteItem = React.memo(({
       </button>
     </div>
   </div>
-);
+));
 
 NoteItem.displayName = 'NoteItem';
 
@@ -76,7 +76,7 @@ const NotesApp = () => {
   const [currentTime, setCurrentTime] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("updated_desc");
 
-  // Debounce 
+  // Debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -226,7 +226,7 @@ const NotesApp = () => {
     return sortableNotes;
   }, [notes, sortOption]);
 
- 
+  // Memoized 
   const filteredNotes = useMemo(() => {
     return getSortedNotes.filter(
       (note) =>
@@ -264,7 +264,7 @@ const NotesApp = () => {
     fetchUser();
   }, []);
 
-  // Load notes when user changes
+  // Load notes
   useEffect(() => {
     if (user) {
       loadNotes();
