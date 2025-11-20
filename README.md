@@ -1,4 +1,6 @@
 # [Notes to Self](https://notes-to-self.vercel.app)
+#### [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sudo-self/notes-to-self)
+
 
 ## Powered by [Turso DB](https://turso.tech)
 
@@ -18,6 +20,8 @@
 - Database: Turso (LibSQL)
 - Auth: GitHub OAuth
 - Icons: Lucide React
+
+
   
 <hr>
 <img width="956" height="786" alt="Screenshot 2025-11-19 at 22 11 26" src="https://github.com/user-attachments/assets/3a0441bc-e412-4c0e-b3e7-dd2fd67feea1" />
