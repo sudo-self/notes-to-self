@@ -19,15 +19,15 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "NTS - Notes To Self",
+  title: "NTS – Notes To Self | Private Notes, Writing & Team Sharing",
   description:
-    "Write notes, keep them private or share them with the team. Github OAuth and Turso DB serverless app",
+    "Notes To Self (NTS) lets you write notes, keep them private, or share them with your team. A fast, secure note-taking app with GitHub OAuth and Turso serverless storage.",
   manifest: "/manifest.json",
 
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "NTS - Notes To Self",
+    title: "NTS – Notes To Self",
   },
 
   icons: {
@@ -40,11 +40,11 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "NTS - Notes To Self",
+    title: "NTS – Notes To Self | Private Notes, Writing & Team Sharing",
     description:
-      "Write notes, keep them private or share them with the team. Github OAuth and Turso DB serverless app",
+      "Notes To Self (NTS) lets you write notes, keep them private, or share them with your team. A fast, secure note-taking app with GitHub OAuth and Turso serverless storage.",
     url: "https://notes-to-self.vercel.app",
-    siteName: "NTS - Notes To Self",
+    siteName: "NTS – Notes To Self",
     images: [
       {
         url: "https://notes-to-self.vercel.app/icon-512.png",
@@ -58,9 +58,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "NTS - Notes To Self",
+    title: "NTS – Notes To Self | Private Notes, Writing & Team Sharing",
     description:
-      "Write notes, keep them private or share them with the team. Github OAuth and Turso DB serverless app",
+      "Notes To Self (NTS) lets you write notes, keep them private, or share them with your team. A fast, secure note-taking app with GitHub OAuth and Turso serverless storage.",
     images: ["https://notes-to-self.vercel.app/icon-512.png"],
   },
 
