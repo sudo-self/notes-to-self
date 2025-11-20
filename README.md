@@ -1,6 +1,18 @@
 # [Notes to Self](https://notes-to-self.vercel.app)
-#### [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sudo-self/notes-to-self)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/sudo-self/notes-to-self)
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/sudo-self/notes-to-self)
+
+[![Open in CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/github/sudo-self/notes-to-self)
+
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/sudo-self/notes-to-self)
+
+
 ## Powered by [Turso DB](https://turso.tech)
+
+
+
 
 <img width="1512" height="837" alt="Screenshot 2025-11-20 at 11 13 48" src="https://github.com/user-attachments/assets/1cc6e495-f169-4045-a145-f78de5cf1dcd" />
 
