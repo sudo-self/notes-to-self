@@ -25,7 +25,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Toast Component
+// Toast 
 const Toast = ({ message, type = "success", onClose }: { 
   message: string; 
   type?: "success" | "error";
@@ -37,7 +37,7 @@ const Toast = ({ message, type = "success", onClose }: {
   }, [onClose]);
 
   return (
-    <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border backdrop-blur-sm transition-all duration-300 ${
+    <div className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 p-4 rounded-lg shadow-lg border backdrop-blur-sm transition-all duration-300 max-w-md w-full mx-4 ${
       type === "success" 
         ? "bg-green-500/90 text-white border-green-400" 
         : "bg-red-500/90 text-white border-red-400"
@@ -49,12 +49,18 @@ const Toast = ({ message, type = "success", onClose }: {
           <X className="w-4 h-4" />
         )}
         <span className="text-sm font-medium">{message}</span>
+        <button
+          onClick={onClose}
+          className="ml-auto text-white/80 hover:text-white transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );
 };
 
-// Enhanced Note Item with Copy functionality
+// Enhanced
 const EnhancedNoteItem = React.memo(({ 
   note, 
   isSelected, 
@@ -223,12 +229,12 @@ const EnhancedNotesApp = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  // Show toast function
+
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
   };
 
-  // Copy note to clipboard
+
   const copyNoteToClipboard = async (note: Note) => {
     try {
       const textToCopy = note.title ? `${note.title}\n\n${note.content}` : note.content;
@@ -242,7 +248,7 @@ const EnhancedNotesApp = () => {
     }
   };
 
-  // Debounce search
+  // Debounce 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -250,7 +256,7 @@ const EnhancedNotesApp = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Character count and change detection
+  // Characters
   useEffect(() => {
     setCharacterCount(content.length);
     
@@ -261,7 +267,7 @@ const EnhancedNotesApp = () => {
     setHasUnsavedChanges(isChanged);
   }, [title, content, selectedNote]);
 
-  // Auto-save functionality
+  // Auto-save
   useEffect(() => {
     if (autoSave && hasUnsavedChanges && user && (title.trim() || content.trim())) {
       const autoSaveTimer = setTimeout(() => {
@@ -417,7 +423,7 @@ const EnhancedNotesApp = () => {
     );
   }, [getSortedNotes, debouncedSearch]);
 
-  // User and notes loading
+  // loading
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
