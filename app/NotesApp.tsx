@@ -25,7 +25,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Enhanced Note Item with better visual design
+// Enhanced Note 
 const EnhancedNoteItem = React.memo(({ 
   note, 
   isSelected, 
@@ -110,7 +110,7 @@ const EnhancedNoteItem = React.memo(({
 
 EnhancedNoteItem.displayName = 'EnhancedNoteItem';
 
-// Loading Skeleton Component
+// Loading Skeleton
 const NoteSkeleton = () => (
   <div className="p-4 border-b border-gray-700/50 animate-pulse">
     <div className="flex items-start gap-3">
@@ -124,7 +124,7 @@ const NoteSkeleton = () => (
   </div>
 );
 
-// Stats Component
+// Stats 
 const StatsPanel = ({ notes, characterCount }: { notes: Note[], characterCount: number }) => (
   <div className="flex items-center gap-4 text-xs text-gray-400">
     <div className="flex items-center gap-1">
@@ -156,7 +156,7 @@ const EnhancedNotesApp = () => {
   const [autoSave, setAutoSave] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Debounce search
+  // Debounce 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -164,7 +164,7 @@ const EnhancedNotesApp = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Character count and change detection
+  // Character 
   useEffect(() => {
     setCharacterCount(content.length);
     
@@ -175,7 +175,7 @@ const EnhancedNotesApp = () => {
     setHasUnsavedChanges(isChanged);
   }, [title, content, selectedNote]);
 
-  // Auto-save functionality
+  // Auto-save 
   useEffect(() => {
     if (autoSave && hasUnsavedChanges && user && (title.trim() || content.trim())) {
       const autoSaveTimer = setTimeout(() => {
@@ -298,7 +298,7 @@ const EnhancedNotesApp = () => {
     }
   };
 
-  // Memoized sorted notes
+  // Memoized 
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
     sortableNotes.sort((a, b) => {
@@ -318,7 +318,7 @@ const EnhancedNotesApp = () => {
     return sortableNotes;
   }, [notes, sortOption]);
 
-  // Memoized filtered notes
+  // Memoized 
   const filteredNotes = useMemo(() => {
     return getSortedNotes.filter(
       (note) =>
@@ -327,7 +327,7 @@ const EnhancedNotesApp = () => {
     );
   }, [getSortedNotes, debouncedSearch]);
 
-  // User and notes loading
+  // loading
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
@@ -395,7 +395,7 @@ const EnhancedNotesApp = () => {
             <Github className="w-5 h-5" />
             {loading ? "Connecting..." : "Continue with GitHub"}
           </button>
-          
+           <p className="text-cyan-200 text-xs font-mono">NTS does not access your GitHub. Login is used to keep your notes secure</p>
           <div className="mt-6 text-center text-gray-400 text-sm">
             <div className="flex items-center justify-center gap-2">
               <Shield className="w-4 h-4" />
