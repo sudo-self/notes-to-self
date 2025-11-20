@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Note to self",
+  title: "Notes to self",
   description: "Write notes, keep them private or share them with the team. Github Oauth and Turso DB serverless api",
 };
 
