@@ -5,11 +5,12 @@ import {
   Trash2, Plus, LogOut, Github, Save, Search, Notebook, 
   SortAsc, SortDesc, Edit3, Clock, User, FileText, 
   BookOpen, Zap, Moon, Sun, Menu, X, Shield, RotateCcw,
-  Type, Hash, Calendar, Copy, Check, Share, BookAlert
+  Type, Hash, Calendar, Copy, Check, Share
 } from "lucide-react";
 
 type SortOption = "updated_desc" | "updated_asc" | "title_asc" | "title_desc";
 type ViewMode = "edit" | "preview";
+type Theme = "light" | "dark";
 
 interface Note {
   id: string;
@@ -25,7 +26,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Toast
+// Toast 
 const Toast = ({ message, type = "success", onClose }: { 
   message: string; 
   type?: "success" | "error";
@@ -57,6 +58,37 @@ const Toast = ({ message, type = "success", onClose }: {
         </button>
       </div>
     </div>
+  );
+};
+
+// Theme
+const ThemeToggle = ({ theme, onThemeChange }: { theme: Theme; onThemeChange: (theme: Theme) => void }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <button className="p-2 rounded-lg text-gray-400 hover:bg-gray-700/50 transition-all duration-300">
+        <Moon className="w-5 h-5" />
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => onThemeChange(theme === "dark" ? "light" : "dark")}
+      className="p-2 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-700/50 transition-all duration-300 group"
+      title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+    >
+      {theme === "dark" ? (
+        <Sun className="w-5 h-5 group-hover:scale-110 transition-transform" />
+      ) : (
+        <Moon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+      )}
+    </button>
   );
 };
 
@@ -276,7 +308,7 @@ const ConfirmationDialog = ({
             onClick={onConfirm}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
           >
-             Yes already
+            Confirm
           </button>
         </div>
       </div>
@@ -308,10 +340,21 @@ const EnhancedNotesApp = () => {
     message: string;
     onConfirm: () => void;
   } | null>(null);
+  const [theme, setTheme] = useState<Theme>("dark");
 
   // prevent infinite loops
   const autoSaveInProgress = useRef(false);
   const lastSavedContent = useRef({ title: "", content: "" });
+
+  // Theme 
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [theme]);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
@@ -350,7 +393,7 @@ const EnhancedNotesApp = () => {
     try {
       const textToShare = note.title ? `${note.title}\n\n${note.content}` : note.content;
       
-      // Web Share API 
+      // Web Share 
       if (navigator.share) {
         await navigator.share({
           title: note.title || 'Note from NTS',
@@ -359,7 +402,7 @@ const EnhancedNotesApp = () => {
         });
         showToast("Note shared!");
       } else {
-        // Fallback to clipboard 
+        // Fallback
         await navigator.clipboard.writeText(textToShare);
         showToast("Note copied to clipboard (share not available)");
       }
@@ -393,7 +436,7 @@ const EnhancedNotesApp = () => {
     setHasUnsavedChanges(isChanged);
   }, [title, content, selectedNote]);
 
-  // Auto-save 
+  // Auto-save functionality 
   useEffect(() => {
     if (autoSave && 
         hasUnsavedChanges && 
@@ -409,7 +452,7 @@ const EnhancedNotesApp = () => {
         if (!saving) {
           saveNote();
         }
-      }, 2000); // prevent
+      }, 2000); // prevent rapid firing
       
       return () => {
         clearTimeout(autoSaveTimer);
@@ -457,7 +500,7 @@ const EnhancedNotesApp = () => {
   const saveNote = async () => {
     if ((!title.trim() && !content.trim()) || !user || !hasUnsavedChanges) return;
     
-    // Prevent multiple 
+    // Prevent multiple
     if (title === lastSavedContent.current.title && content === lastSavedContent.current.content) {
       return;
     }
@@ -488,7 +531,7 @@ const EnhancedNotesApp = () => {
         setSelectedNote(savedNote);
       }
       
-      // Update
+      // Update last saved content
       lastSavedContent.current = { title, content };
       setHasUnsavedChanges(false);
       showToast("Note saved!");
@@ -574,7 +617,7 @@ const EnhancedNotesApp = () => {
     );
   };
 
-  // Memoized
+  // Memoized sorted notes
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
     sortableNotes.sort((a, b) => {
@@ -594,7 +637,7 @@ const EnhancedNotesApp = () => {
     return sortableNotes;
   }, [notes, sortOption]);
 
-  // Memoized
+  // Memoized filtered notes
   const filteredNotes = useMemo(() => {
     return getSortedNotes.filter(
       (note) =>
@@ -603,7 +646,7 @@ const EnhancedNotesApp = () => {
     );
   }, [getSortedNotes, debouncedSearch]);
 
-  // loading
+  // User and notes loading
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
@@ -628,7 +671,7 @@ const EnhancedNotesApp = () => {
     }
   }, [user, loadNotes]);
 
-  // clock
+  // Real-time clock
   useEffect(() => {
     const updateClock = () => {
       setCurrentTime(
@@ -658,9 +701,9 @@ const EnhancedNotesApp = () => {
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <Notebook className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Notes To Self</h1>
-            <p className="text-blue-200 mb-2">Your notes, wherever you go.</p>
-             <p className="text-cyan-200 text-xs font-mono">{currentTime}</p>
+            <h1 className="text-3xl font-bold text-white mb-2">NTS</h1>
+            <p className="text-blue-200 mb-2">Notes To Self</p>
+            <p className="text-cyan-200 text-xs font-mono">{currentTime}</p>
           </div>
 
           <button
@@ -673,8 +716,8 @@ const EnhancedNotesApp = () => {
           </button>
           <div className="mt-6 text-center text-gray-400 text-sm">
             <div className="flex items-center justify-center gap-2">
-              <BookAlert className="w-4 h-4" />
-              <span>NTS does not access your account</span>
+              <Shield className="w-4 h-4" />
+              <span>All notes are private and secure</span>
             </div>
           </div>
         </div>
@@ -732,13 +775,16 @@ const EnhancedNotesApp = () => {
                 <StatsPanel notes={notes} characterCount={characterCount} />
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700/50"
-              title="Logout"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1">
+              <ThemeToggle theme={theme} onThemeChange={setTheme} />
+              <button
+                onClick={handleLogout}
+                className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700/50"
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           
           <div className="flex gap-2">
