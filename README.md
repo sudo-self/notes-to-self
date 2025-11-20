@@ -2,8 +2,7 @@
 
 ## Powered by [Turso DB](https://turso.tech)
 
-
-## Application Features
+### Application Features
 
 - GitHub OAuth Authentication
 - Real-time Notes Management
@@ -12,7 +11,7 @@
 - Secure User Sessions
 
   
- ## Tech Stack
+ ### Tech Stack
 
 - Frontend: Next.js 16, React, TypeScript, Tailwind CSS
 - Backend: Next.js API Routes
@@ -49,6 +48,14 @@ turso db shell notes-db-v2 "CREATE INDEX IF NOT EXISTS idx_notes_user_id ON note
 pnpm install @libsql/client
 
 ```
+
+### create an <a href="https://github.com/settings/applications/new">Oauth App</a> on Github
+
+- set the callback url no trailing slash
+
+- https://YOUR_DOMAIN_HERE/api/auth/github
+
+
 #### JSON
 
 ```
