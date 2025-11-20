@@ -676,6 +676,10 @@ const EnhancedNotesApp = () => {
               <Shield className="w-4 h-4" />
               <span>All notes are private and secure</span>
             </div>
+            <div className="flex items-center justify-center gap-2">
+              <Notebook className="w-4 h-4" />
+              <span>NTS does not access your account</span>
+            </div>
           </div>
         </div>
       </div>
