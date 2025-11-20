@@ -5,7 +5,7 @@ import {
   Trash2, Plus, LogOut, Github, Save, Search, Notebook, 
   SortAsc, SortDesc, Edit3, Clock, User, FileText, 
   BookOpen, Zap, Moon, Sun, Menu, X, Shield, RotateCcw,
-  Type, Hash, Calendar, Copy, Check, Share
+  Type, Hash, Calendar, Copy, Check, Share, BookAlert
 } from "lucide-react";
 
 type SortOption = "updated_desc" | "updated_asc" | "title_asc" | "title_desc";
@@ -673,12 +673,8 @@ const EnhancedNotesApp = () => {
           </button>
           <div className="mt-6 text-center text-gray-400 text-sm">
             <div className="flex items-center justify-center gap-2">
-              <Shield className="w-4 h-4" />
-              <span>All notes are private and secure</span>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <Notebook className="w-4 h-4" />
-              <span>NTS does not access your account</span>
+              <BookAlert className="w-4 h-4" />
+              <span>Notes secure NTS does not access your account</span>
             </div>
           </div>
         </div>
