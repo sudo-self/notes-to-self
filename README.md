@@ -49,15 +49,59 @@ turso db shell notes-db-v2 "CREATE INDEX IF NOT EXISTS idx_notes_user_id ON note
 pnpm install @libsql/client
 
 ```
-#### NODE
+#### JSON
 
 ```
 
-import { createClient } from "@libsql/client";
-
-export const turso = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+[
+  {
+    id: "0acaed84-0c90-4c76-b2ce-50f98b2d011d",
+    user_id: "119XXX",
+    title: "Test #005",
+    content: "005 005 005",
+    created_at: "2025-11-20T01:59:37.088Z",
+    updated_at: "2025-11-20T01:59:37.088Z",
+  },
+  {
+    id: "61e75e04-e5b6-4973-87ed-97eb11164169",
+    user_id: "119XXX",
+    title: "Test #004",
+    content: "004 004 004",
+    created_at: "2025-11-20T01:39:37.123Z",
+    updated_at: "2025-11-20T01:39:37.123Z",
+  },
+  {
+    id: "67bda0f2-8033-470e-b751-d4808d2aec92",
+    user_id: "119XXX",
+    title: "Test #001",
+    content: "001 001 001",
+    created_at: "2025-11-19T16:04:26.582Z",
+    updated_at: "2025-11-19T16:04:26.582Z",
+  },
+  {
+    id: "776fd32e-feb2-4b8c-89ce-bc8d206f92ad",
+    user_id: "119XXX",
+    title: "Test #002",
+    content: "002 002 002",
+    created_at: "2025-11-19T16:04:50.670Z",
+    updated_at: "2025-11-19T16:04:50.670Z",
+  },
+  {
+    id: "a75b9788-93bc-43b2-9cd3-36a81db8c43a",
+    user_id: "119XXX",
+    title: "Test #003",
+    content: "003 003 003",
+    created_at: "2025-11-19T16:05:19.225Z",
+    updated_at: "2025-11-19T16:05:19.225Z",
+  },
+  {
+    id: "fa43127d-81ec-44ea-b9a2-8194ca8e7f1f",
+    user_id: "119XXX",
+    title: "Test #006",
+    content: "006 006 006",
+    created_at: "2025-11-20T04:32:34.968Z",
+    updated_at: "2025-11-20T04:32:34.968Z",
+  },
+];
 
 ```
