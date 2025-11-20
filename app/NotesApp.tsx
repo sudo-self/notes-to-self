@@ -395,7 +395,6 @@ const EnhancedNotesApp = () => {
             <Github className="w-5 h-5" />
             {loading ? "Connecting..." : "Continue with GitHub"}
           </button>
-           <p className="text-cyan-200 text-xs font-mono">NTS does not access your GitHub. Login is used to keep your notes secure</p>
           <div className="mt-6 text-center text-gray-400 text-sm">
             <div className="flex items-center justify-center gap-2">
               <Shield className="w-4 h-4" />
