@@ -31,7 +31,7 @@
 
 - https://YOUR_DOMAIN_HERE/api/auth/github
 
-### <a href="https://github.com/sudo-self/notes-to-self/blob/main/env.example.txt">.env</a>
+### <a href="https://github.com/sudo-self/notes-to-self/blob/main/env.example.txt">.env example</a>
 
 - GITHUB_CLIENT_ID=
 - GITHUB_CLIENT_SECRET=
@@ -43,35 +43,42 @@
 
 
 
-#### TABLE
+- schema.sql
 
 ```
-turso db shell notes "CREATE TABLE IF NOT EXISTS notes (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    title TEXT NOT NULL,
-    content TEXT,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-);"
+CREATE TABLE IF NOT EXISTS notes (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 
-```
-#### INDEX 
-
-```
-turso db shell notes-db-v2 "CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);"
-
-```
-#### CLIENT
-
-```
-pnpm install @libsql/client
-
+CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
+CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at);
 ```
 
+- app/api/auth/debug/route.ts
 
+```
+import { NextResponse } from "next/server";
 
-#### JSON
+export async function GET() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  const redirectUri = `${baseUrl}/api/auth/github`;
+  
+  return NextResponse.json({
+    message: "Debug GitHub OAuth",
+    baseUrl,
+    redirectUri,
+    expected: "https://notes-to-self.vercel.app/api/auth/github",
+    matches: redirectUri === "https://notes-to-self.vercel.app/api/auth/github",
+    clientId: process.env.GITHUB_CLIENT_ID ? "Set" : "Missing"
+  });
+}
+```
+- Note JSON
 
 ```
 
@@ -84,46 +91,4 @@ pnpm install @libsql/client
     created_at: "2025-11-20T01:59:37.088Z",
     updated_at: "2025-11-20T01:59:37.088Z",
   },
-  {
-    id: "61e75e04-e5b6-4973-87ed-97eb11164169",
-    user_id: "119XXX",
-    title: "Test #004",
-    content: "004 004 004",
-    created_at: "2025-11-20T01:39:37.123Z",
-    updated_at: "2025-11-20T01:39:37.123Z",
-  },
-  {
-    id: "67bda0f2-8033-470e-b751-d4808d2aec92",
-    user_id: "119XXX",
-    title: "Test #001",
-    content: "001 001 001",
-    created_at: "2025-11-19T16:04:26.582Z",
-    updated_at: "2025-11-19T16:04:26.582Z",
-  },
-  {
-    id: "776fd32e-feb2-4b8c-89ce-bc8d206f92ad",
-    user_id: "119XXX",
-    title: "Test #002",
-    content: "002 002 002",
-    created_at: "2025-11-19T16:04:50.670Z",
-    updated_at: "2025-11-19T16:04:50.670Z",
-  },
-  {
-    id: "a75b9788-93bc-43b2-9cd3-36a81db8c43a",
-    user_id: "119XXX",
-    title: "Test #003",
-    content: "003 003 003",
-    created_at: "2025-11-19T16:05:19.225Z",
-    updated_at: "2025-11-19T16:05:19.225Z",
-  },
-  {
-    id: "fa43127d-81ec-44ea-b9a2-8194ca8e7f1f",
-    user_id: "119XXX",
-    title: "Test #006",
-    content: "006 006 006",
-    created_at: "2025-11-20T04:32:34.968Z",
-    updated_at: "2025-11-20T04:32:34.968Z",
-  },
-];
-
 ```
