@@ -1,9 +1,11 @@
 
 <img width="1427" height="809" alt="Screenshot 2025-11-19 at 08 22 33" src="https://github.com/user-attachments/assets/8611c496-b01c-4932-8e6e-c8ee4b6b5753" />
+<img width="1512" height="673" alt="Screenshot 2025-11-19 at 18 39 55" src="https://github.com/user-attachments/assets/950602ef-6146-4471-8d64-7002613f2ea7" />
 
 #### CREATE TABLE
 
-<img width="1512" height="982" alt="Screenshot 2025-11-19 at 08 05 43" src="https://github.com/user-attachments/assets/caa5ed17-a4a8-4d54-a354-a03a7895f2c8" />
+<img width="706" height="586" alt="Screenshot 2025-11-19 at 09 06 50" src="https://github.com/user-attachments/assets/8002f1b7-efa4-411a-a512-fea7b5d60b45" />
+
 
 ```
 turso db shell notes "CREATE TABLE IF NOT EXISTS notes (
