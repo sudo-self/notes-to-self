@@ -25,7 +25,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Toast Component
+// Toast Component (unchanged)
 const Toast = ({ message, type = "success", onClose }: { 
   message: string; 
   type?: "success" | "error";
@@ -60,7 +60,7 @@ const Toast = ({ message, type = "success", onClose }: {
   );
 };
 
-// Enhanced Note Item
+// Enhanced Note Item (unchanged)
 const EnhancedNoteItem = React.memo(({ 
   note, 
   isSelected, 
@@ -216,7 +216,7 @@ const EnhancedNoteItem = React.memo(({
 
 EnhancedNoteItem.displayName = 'EnhancedNoteItem';
 
-// Loading Skeleton
+// Loading Skeleton (unchanged)
 const NoteSkeleton = () => (
   <div className="p-4 border-b border-gray-700/50 animate-pulse">
     <div className="flex items-start gap-3">
@@ -230,7 +230,7 @@ const NoteSkeleton = () => (
   </div>
 );
 
-// Stats Panel
+// Stats Panel (unchanged)
 const StatsPanel = ({ notes, characterCount }: { notes: Note[], characterCount: number }) => (
   <div className="flex items-center gap-4 text-xs text-gray-400">
     <div className="flex items-center gap-1">
@@ -244,7 +244,7 @@ const StatsPanel = ({ notes, characterCount }: { notes: Note[], characterCount: 
   </div>
 );
 
-// Confirmation Dialog
+// Confirmation Dialog (unchanged)
 const ConfirmationDialog = ({ 
   isOpen, 
   onClose, 
@@ -284,6 +284,24 @@ const ConfirmationDialog = ({
   );
 };
 
+// Theme Toggle Component - EXTRACTED FOR REUSE
+const ThemeToggle = ({ isDark, setIsDark }: { 
+  isDark: boolean; 
+  setIsDark: (isDark: boolean) => void;
+}) => (
+  <button
+    onClick={() => setIsDark(!isDark)}
+    className="p-2 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-700/50 transition-all duration-300 group"
+    title={`Switch to ${isDark ? "light" : "dark"} mode`}
+  >
+    {isDark ? (
+      <Sun className="w-5 h-5 group-hover:scale-110 transition-transform" />
+    ) : (
+      <Moon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+    )}
+  </button>
+);
+
 const EnhancedNotesApp = () => {
   const [user, setUser] = useState<User | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -308,6 +326,8 @@ const EnhancedNotesApp = () => {
     message: string;
     onConfirm: () => void;
   } | null>(null);
+  
+  // SINGLE SOURCE OF TRUTH for theme state
   const [isDark, setIsDark] = useState(true);
 
   // Use refs to prevent infinite loops
@@ -319,8 +339,10 @@ const EnhancedNotesApp = () => {
     const root = document.documentElement;
     if (isDark) {
       root.classList.add("dark");
+      root.style.colorScheme = "dark";
     } else {
       root.classList.remove("dark");
+      root.style.colorScheme = "light";
     }
     
     // Store theme preference
@@ -332,17 +354,14 @@ const EnhancedNotesApp = () => {
     const savedTheme = localStorage.getItem("theme");
     const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     
-    if (savedTheme === "light") {
-      setIsDark(false);
-    } else if (savedTheme === "dark") {
-      setIsDark(true);
-    } else if (systemPrefersDark) {
-      setIsDark(true);
+    if (savedTheme) {
+      setIsDark(savedTheme === "dark");
     } else {
-      setIsDark(false);
+      setIsDark(systemPrefersDark);
     }
   }, []);
 
+  // Rest of your component logic remains the same...
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
   };
@@ -380,7 +399,6 @@ const EnhancedNotesApp = () => {
     try {
       const textToShare = note.title ? `${note.title}\n\n${note.content}` : note.content;
       
-      // Web Share API
       if (navigator.share) {
         await navigator.share({
           title: note.title || 'Note from NTS',
@@ -389,13 +407,11 @@ const EnhancedNotesApp = () => {
         });
         showToast("Note shared!");
       } else {
-        // Fallback to clipboard
         await navigator.clipboard.writeText(textToShare);
         showToast("Note copied to clipboard (share not available)");
       }
       return true;
     } catch (error) {
-      // User cancelled share
       if (error instanceof Error && error.name !== 'AbortError') {
         console.error("Failed to share note:", error);
         showToast("Failed to share note", "error");
@@ -487,7 +503,6 @@ const EnhancedNotesApp = () => {
   const saveNote = async () => {
     if ((!title.trim() && !content.trim()) || !user || !hasUnsavedChanges) return;
     
-    // Prevent multiple saves of the same content
     if (title === lastSavedContent.current.title && content === lastSavedContent.current.content) {
       return;
     }
@@ -518,7 +533,6 @@ const EnhancedNotesApp = () => {
         setSelectedNote(savedNote);
       }
       
-      // Update last saved content
       lastSavedContent.current = { title, content };
       setHasUnsavedChanges(false);
       showToast("Note saved!");
@@ -683,19 +697,9 @@ const EnhancedNotesApp = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center p-4">
-        {/* Theme Toggle - Top Right Corner */}
+        {/* Theme Toggle - Now using the shared component */}
         <div className="fixed top-4 right-4 z-50">
-          <button
-            onClick={() => setIsDark(!isDark)}
-            className="p-2 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-700/50 transition-all duration-300 group"
-            title={`Switch to ${isDark ? "light" : "dark"} mode`}
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            ) : (
-              <Moon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            )}
-          </button>
+          <ThemeToggle isDark={isDark} setIsDark={setIsDark} />
         </div>
         
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full border border-white/20 shadow-2xl">
@@ -778,17 +782,8 @@ const EnhancedNotesApp = () => {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <button
-                onClick={() => setIsDark(!isDark)}
-                className="p-2 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-gray-700/50 transition-all duration-300 group"
-                title={`Switch to ${isDark ? "light" : "dark"} mode`}
-              >
-                {isDark ? (
-                  <Sun className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                ) : (
-                  <Moon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                )}
-              </button>
+              {/* Using the shared ThemeToggle component */}
+              <ThemeToggle isDark={isDark} setIsDark={setIsDark} />
               <button
                 onClick={handleLogout}
                 className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700/50"
