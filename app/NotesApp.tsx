@@ -25,7 +25,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Toast 
+// Toast Component
 const Toast = ({ message, type = "success", onClose }: { 
   message: string; 
   type?: "success" | "error";
@@ -60,7 +60,7 @@ const Toast = ({ message, type = "success", onClose }: {
   );
 };
 
-// Enhanced
+// Enhanced Note Item
 const EnhancedNoteItem = React.memo(({ 
   note, 
   isSelected, 
@@ -210,6 +210,46 @@ const StatsPanel = ({ notes, characterCount }: { notes: Note[], characterCount: 
   </div>
 );
 
+// Confirmation Dialog Component
+const ConfirmationDialog = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  title, 
+  message 
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  message: string;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-gray-800/90 backdrop-blur-lg border border-gray-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+        <h3 className="text-white text-lg font-semibold mb-2">{title}</h3>
+        <p className="text-gray-300 mb-6">{message}</p>
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EnhancedNotesApp = () => {
   const [user, setUser] = useState<User | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -228,12 +268,32 @@ const EnhancedNotesApp = () => {
   const [autoSave, setAutoSave] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
+  const [confirmationDialog, setConfirmationDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
     setToast({ message, type });
   };
 
+  const showConfirmation = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmationDialog({
+      isOpen: true,
+      title,
+      message,
+      onConfirm: () => {
+        onConfirm();
+        setConfirmationDialog(null);
+      }
+    });
+  };
+
+  const closeConfirmation = () => {
+    setConfirmationDialog(null);
+  };
 
   const copyNoteToClipboard = async (note: Note) => {
     try {
@@ -248,7 +308,7 @@ const EnhancedNotesApp = () => {
     }
   };
 
-  // Debounce 
+  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -256,7 +316,7 @@ const EnhancedNotesApp = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Characters
+  // Character count and change detection
   useEffect(() => {
     setCharacterCount(content.length);
     
@@ -267,7 +327,7 @@ const EnhancedNotesApp = () => {
     setHasUnsavedChanges(isChanged);
   }, [title, content, selectedNote]);
 
-  // Auto-save
+  // Auto-save functionality
   useEffect(() => {
     if (autoSave && hasUnsavedChanges && user && (title.trim() || content.trim())) {
       const autoSaveTimer = setTimeout(() => {
@@ -354,44 +414,71 @@ const EnhancedNotesApp = () => {
   };
 
   const createNewNote = () => {
-    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Create new note anyway?")) {
-      return;
+    if (hasUnsavedChanges) {
+      showConfirmation(
+        "Unsaved Changes",
+        "You have unsaved changes. Create new note anyway?",
+        () => {
+          setSelectedNote(null);
+          setTitle("");
+          setContent("");
+          setHasUnsavedChanges(false);
+        }
+      );
+    } else {
+      setSelectedNote(null);
+      setTitle("");
+      setContent("");
+      setHasUnsavedChanges(false);
     }
-    setSelectedNote(null);
-    setTitle("");
-    setContent("");
-    setHasUnsavedChanges(false);
   };
 
   const selectNote = useCallback((note: Note) => {
-    if (hasUnsavedChanges && !window.confirm("You have unsaved changes. Switch note anyway?")) {
-      return;
+    if (hasUnsavedChanges) {
+      showConfirmation(
+        "Unsaved Changes",
+        "You have unsaved changes. Switch note anyway?",
+        () => {
+          setSelectedNote(note);
+          setTitle(note.title);
+          setContent(note.content);
+          setHasUnsavedChanges(false);
+        }
+      );
+    } else {
+      setSelectedNote(note);
+      setTitle(note.title);
+      setContent(note.content);
+      setHasUnsavedChanges(false);
     }
-    setSelectedNote(note);
-    setTitle(note.title);
-    setContent(note.content);
-    setHasUnsavedChanges(false);
   }, [hasUnsavedChanges]);
 
   const deleteNote = async (noteId: string) => {
-    if (!confirm("Are you sure you want to delete this note? This action cannot be undone.")) return;
-    
-    try {
-      const res = await fetch(`/api/notes?noteId=${noteId}`, { 
-        method: "DELETE" 
-      });
-      
-      if (!res.ok) throw new Error("Delete request failed");
-      
-      setNotes(notes.filter((n) => n.id !== noteId));
-      if (selectedNote?.id === noteId) {
-        createNewNote();
+    showConfirmation(
+      "Delete Note",
+      "Are you sure you want to delete this note? This action cannot be undone.",
+      async () => {
+        try {
+          const res = await fetch(`/api/notes?noteId=${noteId}`, { 
+            method: "DELETE" 
+          });
+          
+          if (!res.ok) throw new Error("Delete request failed");
+          
+          setNotes(notes.filter((n) => n.id !== noteId));
+          if (selectedNote?.id === noteId) {
+            setSelectedNote(null);
+            setTitle("");
+            setContent("");
+            setHasUnsavedChanges(false);
+          }
+          showToast("Note deleted successfully");
+        } catch (err) {
+          console.error("Delete error:", err);
+          showToast("Failed to delete note", "error");
+        }
       }
-      showToast("Note deleted successfully");
-    } catch (err) {
-      console.error("Delete error:", err);
-      showToast("Failed to delete note", "error");
-    }
+    );
   };
 
   // Memoized sorted notes
@@ -423,7 +510,7 @@ const EnhancedNotesApp = () => {
     );
   }, [getSortedNotes, debouncedSearch]);
 
-  // loading
+  // User and notes loading
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
@@ -510,6 +597,17 @@ const EnhancedNotesApp = () => {
           message={toast.message} 
           type={toast.type} 
           onClose={() => setToast(null)} 
+        />
+      )}
+
+      {/* Confirmation Dialog */}
+      {confirmationDialog && (
+        <ConfirmationDialog
+          isOpen={confirmationDialog.isOpen}
+          onClose={closeConfirmation}
+          onConfirm={confirmationDialog.onConfirm}
+          title={confirmationDialog.title}
+          message={confirmationDialog.message}
         />
       )}
 
