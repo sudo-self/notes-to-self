@@ -1,4 +1,7 @@
-# <a href="https://notes-to-self.vercel.app">Notes to Self</a>
+# [Notes to Self](https://notes-to-self.vercel.app)
+
+## Powered by [Turso DB](https://turso.tech)
+
 
 ## Application Features
 
