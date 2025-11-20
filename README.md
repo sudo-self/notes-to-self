@@ -20,10 +20,8 @@
 - Auth: GitHub OAuth
 - Icons: Lucide React
 <hr>
-
-<img width="1512" height="859" alt="Screenshot 2025-11-19 at 21 47 26" src="https://github.com/user-attachments/assets/00ed27bf-d755-4e7e-8fc2-8abe6a6eb32c" />
-<img width="956" height="786" alt="Screenshot 2025-11-19 at 22 11 26" src="https://github.com/user-attachments/assets/0c50a9a9-af77-44a7-9350-b84d734a8465" />
-<img width="956" height="786" alt="Screenshot 2025-11-19 at 22 12 08" src="https://github.com/user-attachments/assets/8f8f3a38-4dc3-40ec-b374-7e9d9a7cc7f6" />
+<img width="956" height="786" alt="Screenshot 2025-11-19 at 22 11 26" src="https://github.com/user-attachments/assets/3a0441bc-e412-4c0e-b3e7-dd2fd67feea1" />
+<img width="956" height="786" alt="Screenshot 2025-11-19 at 22 12 08" src="https://github.com/user-attachments/assets/e1281d7e-0bbd-4aa5-9ade-d5ca95480886" />
 <img width="706" height="586" alt="Screenshot 2025-11-19 at 09 06 50" src="https://github.com/user-attachments/assets/8002f1b7-efa4-411a-a512-fea7b5d60b45" />
 
 #### TABLE
