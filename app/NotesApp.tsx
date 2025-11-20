@@ -276,7 +276,7 @@ const ConfirmationDialog = ({
             onClick={onConfirm}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
           >
-            Yes Forever
+             Yes already
           </button>
         </div>
       </div>
@@ -658,9 +658,9 @@ const EnhancedNotesApp = () => {
             <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
               <Notebook className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">NTS</h1>
-            <p className="text-blue-200 mb-2">Notes To Self</p>
-            <p className="text-cyan-200 text-xs font-mono">{currentTime}</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Notes To Self</h1>
+            <p className="text-blue-200 mb-2">Your notes, wherever you go.</p>
+             <p className="text-cyan-200 text-xs font-mono">{currentTime}</p>
           </div>
 
           <button
