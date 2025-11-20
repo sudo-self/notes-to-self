@@ -25,7 +25,7 @@ interface User {
   avatar_url?: string;
 }
 
-// Toast Component - SHORT DURATION
+// Toast
 const Toast = ({ message, type = "success", onClose }: { 
   message: string; 
   type?: "success" | "error";
@@ -60,7 +60,7 @@ const Toast = ({ message, type = "success", onClose }: {
   );
 };
 
-// Enhanced Note Item with Share functionality
+// Enhanced Note 
 const EnhancedNoteItem = React.memo(({ 
   note, 
   isSelected, 
@@ -244,7 +244,7 @@ const StatsPanel = ({ notes, characterCount }: { notes: Note[], characterCount: 
   </div>
 );
 
-// Confirmation Dialog Component
+// Confirmation Dialog
 const ConfirmationDialog = ({ 
   isOpen, 
   onClose, 
@@ -276,7 +276,7 @@ const ConfirmationDialog = ({
             onClick={onConfirm}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
           >
-            Confirm
+            Yes Forever
           </button>
         </div>
       </div>
@@ -309,7 +309,7 @@ const EnhancedNotesApp = () => {
     onConfirm: () => void;
   } | null>(null);
 
-  // Use refs to prevent infinite loops
+  // prevent infinite loops
   const autoSaveInProgress = useRef(false);
   const lastSavedContent = useRef({ title: "", content: "" });
 
@@ -350,7 +350,7 @@ const EnhancedNotesApp = () => {
     try {
       const textToShare = note.title ? `${note.title}\n\n${note.content}` : note.content;
       
-      // Check if Web Share API is available
+      // Web Share API 
       if (navigator.share) {
         await navigator.share({
           title: note.title || 'Note from NTS',
@@ -359,13 +359,13 @@ const EnhancedNotesApp = () => {
         });
         showToast("Note shared!");
       } else {
-        // Fallback to clipboard if Web Share isn't available
+        // Fallback to clipboard 
         await navigator.clipboard.writeText(textToShare);
         showToast("Note copied to clipboard (share not available)");
       }
       return true;
     } catch (error) {
-      // User cancelled the share or error occurred
+      // User cancelled 
       if (error instanceof Error && error.name !== 'AbortError') {
         console.error("Failed to share note:", error);
         showToast("Failed to share note", "error");
@@ -382,7 +382,7 @@ const EnhancedNotesApp = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Character count and change detection - FIXED
+  // Character count 
   useEffect(() => {
     setCharacterCount(content.length);
     
@@ -393,7 +393,7 @@ const EnhancedNotesApp = () => {
     setHasUnsavedChanges(isChanged);
   }, [title, content, selectedNote]);
 
-  // Auto-save functionality - FIXED to prevent loops
+  // Auto-save 
   useEffect(() => {
     if (autoSave && 
         hasUnsavedChanges && 
@@ -409,7 +409,7 @@ const EnhancedNotesApp = () => {
         if (!saving) {
           saveNote();
         }
-      }, 2000); // Increased slightly to prevent rapid firing
+      }, 2000); // prevent
       
       return () => {
         clearTimeout(autoSaveTimer);
@@ -457,7 +457,7 @@ const EnhancedNotesApp = () => {
   const saveNote = async () => {
     if ((!title.trim() && !content.trim()) || !user || !hasUnsavedChanges) return;
     
-    // Prevent multiple saves of the same content
+    // Prevent multiple 
     if (title === lastSavedContent.current.title && content === lastSavedContent.current.content) {
       return;
     }
@@ -488,7 +488,7 @@ const EnhancedNotesApp = () => {
         setSelectedNote(savedNote);
       }
       
-      // Update last saved content
+      // Update
       lastSavedContent.current = { title, content };
       setHasUnsavedChanges(false);
       showToast("Note saved!");
@@ -574,7 +574,7 @@ const EnhancedNotesApp = () => {
     );
   };
 
-  // Memoized sorted notes
+  // Memoized
   const getSortedNotes = useMemo(() => {
     const sortableNotes = [...notes];
     sortableNotes.sort((a, b) => {
@@ -594,7 +594,7 @@ const EnhancedNotesApp = () => {
     return sortableNotes;
   }, [notes, sortOption]);
 
-  // Memoized filtered notes
+  // Memoized
   const filteredNotes = useMemo(() => {
     return getSortedNotes.filter(
       (note) =>
@@ -603,7 +603,7 @@ const EnhancedNotesApp = () => {
     );
   }, [getSortedNotes, debouncedSearch]);
 
-  // User and notes loading
+  // loading
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
@@ -628,7 +628,7 @@ const EnhancedNotesApp = () => {
     }
   }, [user, loadNotes]);
 
-  // Real-time clock
+  // clock
   useEffect(() => {
     const updateClock = () => {
       setCurrentTime(
