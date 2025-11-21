@@ -6,7 +6,7 @@ import {
   SortAsc, SortDesc, Edit3, Clock, User, FileText, 
   BookOpen, Zap, Moon, Sun, Menu, X, Shield, RotateCcw,
   Type, Hash, Calendar, Copy, Check, Share, Tag, Archive, 
-  Unarchive, Star, AlertCircle, Eye, EyeOff, Code,
+  ArchiveRestore, Star, AlertCircle, Eye, EyeOff, Code,
   Lock, Unlock, MoreVertical, Download, Upload, Maximize2,
   Filter, List, Grid, Settings
 } from "lucide-react";
