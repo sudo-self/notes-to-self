@@ -184,7 +184,7 @@ const NoteOptionsMenu = ({ note, onPin, onArchive, onTogglePrivate, onExport, is
           <button onClick={() => { onArchive(); setOpen(false); }} className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-opacity-50 border-b ${
             isDark ? "text-gray-300 hover:bg-gray-700 border-gray-700" : "text-gray-700 hover:bg-gray-100 border-gray-200"
           }`}>
-            {note.archived ? <Unarchive className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+            {note.archived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
             {note.archived ? "Unarchive" : "Archive"}
           </button>
           <button onClick={() => { onTogglePrivate(); setOpen(false); }} className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-opacity-50 border-b ${
@@ -924,7 +924,7 @@ const EnhancedNotesApp = () => {
                   : "bg-gray-200/50 text-gray-700 hover:bg-gray-300/50"
               }`}
             >
-              {showArchived ? <Unarchive className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
+              {showArchived ? <ArchiveRestore className="w-4 h-4" /> : <Archive className="w-4 h-4" />}
               {showArchived ? "Archived" : "Active"}
             </button>
             
