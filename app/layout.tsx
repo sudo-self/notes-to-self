@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     siteName: "NTS – Notes To Self",
     images: [
       {
-        url: "https://notes-to-self.vercel.app/icon-512.png",
+        url: "https://notes-to-self.vercel.app/nts.png",
         width: 1200,
         height: 630,
         alt: "NTS - Notes To Self App Preview",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     title: "NTS – Notes To Self | Private Notes, Writing & Team Sharing",
     description:
       "Notes To Self (NTS) lets you write and keep notes private or share with your team. Secure, fast, serverless note-taking with GitHub OAuth.",
-    images: ["https://notes-to-self.vercel.app/icon-512.png"],
+    images: ["https://notes-to-self.vercel.app/nts.png"],
   },
 
   metadataBase: new URL("https://notes-to-self.vercel.app"),
