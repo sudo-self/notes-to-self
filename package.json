@@ -14,7 +14,7 @@
     "@tursodatabase/api": "^1.9.0",
     "g-notes": "link:",
     "lucide-react": "^0.554.0",
-    "next": "16.0.3",
+    "next": "16.0.7",
     "pnpm": "^10.23.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
